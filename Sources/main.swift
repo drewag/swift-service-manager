@@ -12,6 +12,7 @@ parser.command(named: "build", handler: BuildCommand.handler)
 parser.command(named: "project", handler: ProjectCommand.handler)
 parser.command(named: "db", handler: DatabaseCommand.handler)
 parser.command(named: "edit", handler: EditCommand.handler)
+parser.command(named: "run", handler: RunCommand.handler)
 
 do {
     try parser.parse()

@@ -36,6 +36,3 @@ struct EditCommand {
         throw LocalUserReportableError(source: "EditCommand", operation: "editing repository", message: "Trying to edit inside an existing repository", reason: .user)
     }
 }
-
-extension PackageService {
-}
