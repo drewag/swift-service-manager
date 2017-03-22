@@ -71,7 +71,7 @@ private extension PackageService {
             }
 
             if extraInfoDict.count > 0 {
-                print("Extra Info Required for this Service:")
+                "Extra Info Required for this Service:".log()
                 var output = [String:Any]()
                 for (key, type) in extraInfoDict {
                     output[key] = try self.value(for: key, andType: type)
@@ -86,7 +86,6 @@ private extension PackageService {
     }
 
     func value(for key: String, andType type: String) throws -> Any {
-        print(type)
         var type = type
         let isOptional = type.hasSuffix("?")
         if isOptional {

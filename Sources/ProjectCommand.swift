@@ -15,15 +15,21 @@ struct ProjectCommand {
 
         let service = try PackageService()
 
-        try service.generateProject()
-        try service.generateSchemes()
-        try service.openProject()
+        try service.generateAndOpenProject()
+    }
+}
+
+extension PackageService {
+    func generateAndOpenProject() throws {
+        "Generating project...".log()
+        try self.generateProject()
+        try self.generateSchemes()
+        try self.openProject()
     }
 }
 
 private extension PackageService {
     func generateProject() throws {
-        print("Generating project...")
         let flags = "-Xcc -I/usr/local/include -Xlinker -L/usr/local/lib/ -Xswiftc -I/usr/local/include"
         let _ = try ShellCommand("swift package generate-xcodeproj \(flags)").execute()
     }
