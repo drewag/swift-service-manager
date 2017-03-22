@@ -14,6 +14,7 @@ struct InitCommand {
     static func handler(parser: Parser) throws {
         try parser.parse()
 
+        "Initializing package...".log()
         try ShellCommand("swift package init --type executable").execute()
 
         var service = try PackageService()
@@ -21,18 +22,8 @@ struct InitCommand {
     }
 }
 
-extension PackageService {
-    mutating func resetDatabase() throws {
-        print("Setting up database...")
-        try String(randomOfLength: 20).write(toFile: "database_password.string", atomically: true, encoding: .utf8)
-        try self.command(subCommand: "db recreate-role").pipe(to: "psql").execute()
-        try self.command(subCommand: "db recreate").pipe(to: "psql").execute()
-    }
-}
-
 private extension PackageService {
     mutating func initialize() throws {
-        print("Initializing package...")
         try self.generatePackageFile()
         try self.generateMain()
         try self.generateGitIgnore()
@@ -40,7 +31,6 @@ private extension PackageService {
     }
 
     func generateGitIgnore() throws {
-        print("Generating gitignore...")
         var ignore = ""
         ignore += ".DS_Store\n"
         ignore += "/.build\n"
@@ -52,7 +42,6 @@ private extension PackageService {
     }
 
     func generatePackageFile() throws {
-        print("Generating package file...")
         var package = ""
         package += "import PackageDescription\n"
         package += "\n"
@@ -66,7 +55,6 @@ private extension PackageService {
     }
 
     func generateMain() throws {
-        print("Generating main...")
         var main = ""
         main += "import Foundation\n"
         main += "import SwiftServe\n"

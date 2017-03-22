@@ -23,7 +23,7 @@ extension PackageService {
     func build(for environment: Environment) throws {
         var flags = "-Xcc -I/usr/local/include -Xlinker -L/usr/local/lib/ -Xcc -I/usr/local/include/libxml2"
         flags.append(" --configuration \(environment.rawValue)")
-        print("Building for \(environment.rawValue)...")
+        "Building for \(environment.rawValue)...".log()
         let _ = try ShellCommand("swift build \(flags)", captureOutput: false).execute()
     }
 }

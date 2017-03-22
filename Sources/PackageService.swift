@@ -24,7 +24,7 @@ struct PackageService {
         self.name = try type(of: self).getPackageName()
     }
 
-    mutating func command(for environment: Environment = .release, subCommand: String) throws -> ShellCommand {
+    mutating func command(named: String? = nil, for environment: Environment = .release, subCommand: String) throws -> ShellCommand {
         if self.builtEnvironments[environment] == nil {
             try self.build(for: environment)
             self.builtEnvironments[environment] = ()
@@ -34,12 +34,13 @@ struct PackageService {
             try self.validateSpec(for: environment)
         }
 
+        named?.log(as: .neutral)
         return ShellCommand(".build/\(environment.rawValue)/\(self.name) \(subCommand)")
     }
 
     @discardableResult
-    mutating func call(subCommand: String, for environment: Environment = .release) throws -> String {
-        return try self.command(for: environment, subCommand: subCommand).execute()
+    mutating func call(named: String? = nil, subCommand: String, for environment: Environment = .release) throws -> String {
+        return try self.command(named: named, for: environment, subCommand: subCommand).execute()
     }
 }
 
