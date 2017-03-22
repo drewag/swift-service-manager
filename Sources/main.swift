@@ -1,4 +1,9 @@
+import Foundation
 import CommandLineParser
+
+guard validateDependencies() else {
+    exit(1)
+}
 
 let parser = Parser(arguments: CommandLine.arguments)
 
@@ -12,4 +17,5 @@ do {
 }
 catch {
     "\(error)".log(as: .bad)
+    exit(1)
 }
