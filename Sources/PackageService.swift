@@ -18,7 +18,7 @@ struct PackageService {
 
     let name: String
     private var builtEnvironments = [Environment:Void]()
-    fileprivate var validatedSpec = false
+    fileprivate var spec: SwiftServeInstanceSpec? = nil
 
     var databaseName: String {
         return self.name.replacingOccurrences(of: ".", with: "_")
@@ -28,15 +28,24 @@ struct PackageService {
         self.name = try type(of: self).getPackageName()
     }
 
+    mutating func loadSpec(for environment: Environment) throws -> SwiftServeInstanceSpec {
+        if let spec = self.spec {
+            return spec
+        }
+
+        let spec = try self.validateSpec(for: environment)
+        self.spec = spec
+        return spec
+    }
+
     mutating func command(named: String? = nil, captureOutput: Bool = false, for environment: Environment = .debug, subCommand: String) throws -> ShellCommand {
         if self.builtEnvironments[environment] == nil {
             try self.build(for: environment)
             self.builtEnvironments[environment] = ()
         }
 
-        if !validatedSpec {
-            try self.validateSpec(for: environment)
-        }
+        // Force spec validation
+        let _ = try self.loadSpec(for: environment)
 
         named?.log(as: .neutral)
         return ShellCommand(".build/\(environment.rawValue)/\(self.name) \(subCommand)", captureOutput: !captureOutput)
@@ -64,7 +73,7 @@ private extension PackageService {
         return name
     }
 
-    mutating func validateSpec(for environment: Environment) throws {
+    mutating func validateSpec(for environment: Environment) throws -> SwiftServeInstanceSpec {
         let jsonString = try ShellCommand(".build/\(environment.rawValue)/\(self.name) info").execute()
         let object = try JSONSerialization.jsonObject(with: jsonString.data(using: .utf8)!, options: JSONSerialization.ReadingOptions())
         let spec: SwiftServeInstanceSpec = try NativeTypesDecoder.decodableTypeFromObject(object, mode: .saveLocally)
@@ -90,7 +99,7 @@ private extension PackageService {
             }
         }
 
-        self.validatedSpec = true
+        return spec
     }
 
     func value(for key: String, andType type: String) throws -> Any {

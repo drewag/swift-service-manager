@@ -17,14 +17,13 @@ struct ProjectCommand: CommandHandler {
     static func handler(parser: Parser) throws {
         try parser.parse()
 
-        let service = try PackageService()
-
+        var service = try PackageService()
         try service.generateAndOpenProject()
     }
 }
 
 extension PackageService {
-    func generateAndOpenProject() throws {
+    mutating func generateAndOpenProject() throws {
         "Generating project...".log()
         try self.generateProject()
         try self.generateSchemes()
@@ -43,13 +42,18 @@ private extension PackageService {
         let _ = try ShellCommand("open \(self.name).xcodeproj").execute()
     }
 
-    func generateSchemes() throws {
+    mutating func generateSchemes() throws {
         try self.schemeXML(arguments: ["server", "8080"])
             .write(toFile: "\(name).xcodeproj/xcshareddata/xcschemes/server.xcscheme", atomically: true, encoding: .utf8)
         try self.schemeXML(arguments: ["info"])
             .write(toFile: "\(name).xcodeproj/xcshareddata/xcschemes/info.xcscheme", atomically: true, encoding: .utf8)
         try self.schemeXML(arguments: ["db", "migrate"])
             .write(toFile: "\(name).xcodeproj/xcshareddata/xcschemes/migrate-database.xcscheme", atomically: true, encoding: .utf8)
+        for scheme in try self.loadSpec(for: .debug).extraSchemes {
+            let name = scheme.name.lowercased().replacingOccurrences(of: " ", with: "-")
+            try self.schemeXML(arguments: scheme.arguments)
+                .write(toFile: "\(self.name).xcodeproj/xcshareddata/xcschemes/\(name).xcscheme", atomically: true, encoding: .utf8)
+        }
     }
 
     func schemeXML(arguments: [String]) -> String {
