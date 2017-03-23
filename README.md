@@ -9,11 +9,7 @@ Clone the repository locally and change into its directory
     git clone https://github.com/drewag/swift-service-manager
     cd swift-service-manager
 
-Build the binary
-
-    make prod
-    
-Install the binary as a user command
+Build the binary and install it
 
     make install
 
@@ -23,7 +19,7 @@ Usage
 Run the command to get a list of available commands
 
     ssm
-    
+
 Run any command with the option `-h` or `--help` to get help on that specific command:
 
     ssm edit -h
