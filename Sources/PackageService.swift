@@ -24,7 +24,7 @@ struct PackageService {
         self.name = try type(of: self).getPackageName()
     }
 
-    mutating func command(named: String? = nil, captureOutput: Bool = false, for environment: Environment = .release, subCommand: String) throws -> ShellCommand {
+    mutating func command(named: String? = nil, captureOutput: Bool = false, for environment: Environment = .debug, subCommand: String) throws -> ShellCommand {
         if self.builtEnvironments[environment] == nil {
             try self.build(for: environment)
             self.builtEnvironments[environment] = ()
