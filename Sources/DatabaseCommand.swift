@@ -8,6 +8,7 @@
 
 import CommandLineParser
 import SwiftPlusPlus
+import SwiftServe
 
 struct DatabaseCommand: CommandHandler {
     static let name: String = "db"
@@ -27,6 +28,15 @@ struct DatabaseCommand: CommandHandler {
 
             var service = try PackageService()
             try service.migrateDatabase(for: .debug)
+        }
+
+        parser.command(named: "sql", shortDescription: "Execute an arbitrary sql command inside the database") { parser in
+            let query = parser.string(named: "query")
+
+            try parser.parse()
+
+            var service = try PackageService()
+            try service.queryDatabaseCommand(with: query.parsedValue).execute()
         }
 
         try parser.parse()

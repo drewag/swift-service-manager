@@ -20,6 +20,10 @@ struct PackageService {
     private var builtEnvironments = [Environment:Void]()
     fileprivate var validatedSpec = false
 
+    var databaseName: String {
+        return self.name.replacingOccurrences(of: ".", with: "_")
+    }
+
     init() throws {
         self.name = try type(of: self).getPackageName()
     }
@@ -36,6 +40,10 @@ struct PackageService {
 
         named?.log(as: .neutral)
         return ShellCommand(".build/\(environment.rawValue)/\(self.name) \(subCommand)", captureOutput: !captureOutput)
+    }
+
+    mutating func queryDatabaseCommand(with query: String) -> ShellCommand {
+        return ShellCommand("echo \(query)").pipe(to: "psql -d \(self.databaseName)", captureOutput: false)
     }
 
     @discardableResult
