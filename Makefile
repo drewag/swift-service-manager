@@ -17,6 +17,7 @@ clean:
 	swift build --clean
 
 install: prod
+	swift package update
 	cp .build/release/ssm /usr/local/bin/
 
 service: Sources/*.swift Package.swift
