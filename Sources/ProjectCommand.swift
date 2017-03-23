@@ -9,7 +9,11 @@
 import CommandLineParser
 import SwiftPlusPlus
 
-struct ProjectCommand {
+struct ProjectCommand: CommandHandler {
+    static let name: String = "project"
+    static let shortDescription: String? = "Generate an Xcode project and open it"
+    static let longDescription: String? = nil
+
     static func handler(parser: Parser) throws {
         try parser.parse()
 

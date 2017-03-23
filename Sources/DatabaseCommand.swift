@@ -9,16 +9,20 @@
 import CommandLineParser
 import SwiftPlusPlus
 
-struct DatabaseCommand {
+struct DatabaseCommand: CommandHandler {
+    static let name: String = "db"
+    static let shortDescription: String? = "Has multiple subcommands for managing your local database"
+    static let longDescription: String? = nil
+
     static func handler(parser: Parser) throws {
-        parser.command(named: "reset") { parser in
+        parser.command(named: "reset", shortDescription: "Delete the database (if it exists) and recreate it") { parser in
             try parser.parse()
 
             var service = try PackageService()
             try service.resetDatabase()
         }
 
-        parser.command(named: "migrate") { parser in
+        parser.command(named: "migrate", shortDescription: "Migrate to the latest version of the database spec") { parser in
             try parser.parse()
 
             var service = try PackageService()

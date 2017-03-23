@@ -7,13 +7,13 @@ guard validateDependencies() else {
 
 let parser = Parser(arguments: CommandLine.arguments)
 
-parser.command(named: "init", handler: InitCommand.handler)
-parser.command(named: "build", handler: BuildCommand.handler)
-parser.command(named: "project", handler: ProjectCommand.handler)
-parser.command(named: "db", handler: DatabaseCommand.handler)
-parser.command(named: "edit", handler: EditCommand.handler)
-parser.command(named: "run", handler: RunCommand.handler)
-parser.command(named: "update", handler: UpdateCommand.handler)
+parser.command(InitCommand.self)
+parser.command(BuildCommand.self)
+parser.command(ProjectCommand.self)
+parser.command(DatabaseCommand.self)
+parser.command(EditCommand.self)
+parser.command(RunCommand.self)
+parser.command(UpdateCommand.self)
 
 do {
     try parser.parse()

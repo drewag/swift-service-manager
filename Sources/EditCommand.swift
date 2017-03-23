@@ -10,7 +10,11 @@ import Foundation
 import CommandLineParser
 import SwiftPlusPlus
 
-struct EditCommand {
+struct EditCommand: CommandHandler {
+    static let name: String = "edit"
+    static let shortDescription: String? = "Pull down the web service repositry at the given URL to edit it"
+    static let longDescription: String? = "Pull down the web service repositry at the given URL, build it, setup the datbabase locally, and open the project in Xcode"
+
     static func handler(parser: Parser) throws {
         let repository = parser.url(named: "git_repository_url")
 

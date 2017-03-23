@@ -10,7 +10,11 @@ import Foundation
 import CommandLineParser
 import SwiftPlusPlus
 
-struct UpdateCommand {
+struct UpdateCommand: CommandHandler {
+    static let name: String = "update"
+    static let shortDescription: String? = "Update to the latest version"
+    static let longDescription: String? = "Update the repository to the latest code and migrate the database if necessary"
+
     static func handler(parser: Parser) throws {
         let environment = parser.optionalString(named: "environment")
 

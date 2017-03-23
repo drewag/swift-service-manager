@@ -10,27 +10,26 @@ import Foundation
 import CommandLineParser
 import SwiftPlusPlus
 
-struct RunCommand {
+struct RunCommand: CommandHandler {
+    static let name: String = "run"
+    static let shortDescription: String? = "Start running a server"
+    static let longDescription: String? = "Start running a server on the specified port for the given environment (prod|debug - defaults to debug)"
+
     static func handler(parser: Parser) throws {
         let port = parser.optionalInt(named: "port")
+        let environment = parser.optionalString(named: "environment")
 
         try parser.parse()
 
         var service = try PackageService()
-        try service.run(onPort: port.parsedValue)
+        try service.run(onPort: port.parsedValue, for: environment.parsedValue == "prod" ? .release : .debug)
     }
 }
 
 var commandToKill: ShellCommand?
 
 extension PackageService {
-    mutating func run(onPort port: Int?) throws {
-        let command = try self.command(named: "Staring server...", captureOutput: true, for: .debug, subCommand: "server \(port ?? 8080)")
-        command.executeAsync()
-        commandToKill = command
-        signal(SIGINT, { _ in
-            commandToKill?.terminate()
-        })
-        command.waitUntilExit()
+    mutating func run(onPort port: Int?, for environment: Environment) throws {
+        try self.command(named: "Staring server...", captureOutput: true, for: environment, subCommand: "server \(port ?? 8080)").execute()
     }
 }

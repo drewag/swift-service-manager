@@ -9,7 +9,11 @@
 import CommandLineParser
 import SwiftPlusPlus
 
-struct BuildCommand {
+struct BuildCommand: CommandHandler {
+    static let name: String = "build"
+    static let shortDescription: String? = "Rebuild the passed in environment (prod|debug - defaults to debug)"
+    static let longDescription: String? = nil
+
     static func handler(parser: Parser) throws {
         let environment = parser.optionalString(named: "environment")
         try parser.parse()

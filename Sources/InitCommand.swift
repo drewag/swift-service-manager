@@ -10,7 +10,11 @@ import Foundation
 import CommandLineParser
 import SwiftPlusPlus
 
-struct InitCommand {
+struct InitCommand: CommandHandler {
+    static let name: String = "init"
+    static let shortDescription: String? = "Initialize a new web service project and setup database"
+    static let longDescription: String? = nil
+
     static func handler(parser: Parser) throws {
         try parser.parse()
 
