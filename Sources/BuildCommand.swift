@@ -11,11 +11,11 @@ import SwiftPlusPlus
 
 struct BuildCommand: CommandHandler {
     static let name: String = "build"
-    static let shortDescription: String? = "Rebuild the passed in environment (prod|debug - defaults to debug)"
+    static let shortDescription: String? = "Rebuild the passed in configuration (prod|debug - defaults to debug)"
     static let longDescription: String? = nil
 
     static func handler(parser: Parser) throws {
-        let environment = parser.optionalString(named: "environment")
+        let environment = parser.optionalString(named: "configuration")
         try parser.parse()
 
         let service = try PackageService()

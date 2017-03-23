@@ -13,11 +13,11 @@ import SwiftPlusPlus
 struct RunCommand: CommandHandler {
     static let name: String = "run"
     static let shortDescription: String? = "Start running a server"
-    static let longDescription: String? = "Start running a server on the specified port for the given environment (prod|debug - defaults to debug)"
+    static let longDescription: String? = "Start running a server on the specified port for the given configuration (prod|debug - defaults to debug)"
 
     static func handler(parser: Parser) throws {
         let port = parser.optionalInt(named: "port")
-        let environment = parser.optionalString(named: "environment")
+        let environment = parser.optionalString(named: "configuration")
 
         try parser.parse()
 
