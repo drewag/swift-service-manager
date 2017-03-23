@@ -14,6 +14,7 @@ parser.command(DatabaseCommand.self)
 parser.command(EditCommand.self)
 parser.command(RunCommand.self)
 parser.command(UpdateCommand.self)
+parser.command(CustomCommand.self)
 
 do {
     try parser.parse()

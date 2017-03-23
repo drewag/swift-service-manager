@@ -48,7 +48,7 @@ struct PackageService {
         let _ = try self.loadSpec(for: environment)
 
         named?.log(as: .neutral)
-        return ShellCommand(".build/\(environment.rawValue)/\(self.name) \(subCommand)", captureOutput: !captureOutput)
+        return ShellCommand(".build/\(environment.rawValue)/\(self.name) \(subCommand)", captureOutput: captureOutput)
     }
 
     mutating func queryDatabaseCommand(with query: String) -> ShellCommand {
