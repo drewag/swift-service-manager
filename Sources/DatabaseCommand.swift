@@ -22,7 +22,7 @@ struct DatabaseCommand {
             try parser.parse()
 
             var service = try PackageService()
-            try service.migrateDatabase()
+            try service.migrateDatabase(for: .debug)
         }
 
         try parser.parse()
@@ -34,10 +34,10 @@ extension PackageService {
         try String(randomOfLength: 20).write(toFile: "database_password.string", atomically: true, encoding: .utf8)
         try self.command(named: "Resetting database...", subCommand: "db recreate-role").pipe(to: "psql -q").execute()
         try self.command(subCommand: "db recreate").pipe(to: "psql -q").execute()
-        try self.migrateDatabase()
+        try self.migrateDatabase(for: .debug)
     }
 
-    mutating func migrateDatabase() throws {
-        try self.command(named: "Migrating database...", subCommand: "db migrate").execute()
+    mutating func migrateDatabase(for environment: Environment) throws {
+        try self.command(named: "Migrating database...", for: environment, subCommand: "db migrate").execute()
     }
 }
