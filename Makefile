@@ -14,7 +14,7 @@ prod: FLAGS += --configuration release
 prod: service
 
 project:
-	swift package generate-xcodeproj -Xcc -I/usr/local/include -Xlinker -L/usr/local/lib/ -Xswiftc -I/usr/local/include
+	swift package -Xcc -I/usr/local/include -Xlinker -L/usr/local/lib/ -Xswiftc -I/usr/local/include generate-xcodeproj
 
 clean:
 	swift build --clean
