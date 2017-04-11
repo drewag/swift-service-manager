@@ -7,9 +7,6 @@ endif
 
 all: service
 
-update:
-	swift package update
-
 prod: FLAGS += --configuration release
 prod: service
 
@@ -19,7 +16,7 @@ project:
 clean:
 	swift build --clean
 
-install: update prod
+install: prod
 	cp .build/release/ssm /usr/local/bin/
 
 service: Sources/*.swift Package.swift
