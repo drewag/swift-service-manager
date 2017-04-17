@@ -28,6 +28,21 @@ struct PackageService {
         self.name = try type(of: self).getPackageName()
     }
 
+    var buildFlags: String {
+        #if os(macOS)
+            let extraFlags = (try? String(contentsOfFile: "extra_mac_build_flags.txt")) ?? ""
+        #elseif os(Linux)
+            let extraFlags = (try? String(contentsOfFile: "extra_linux_build_flags.txt")) ?? ""
+        #else
+            let extraFlags = ""
+        #endif
+        var flags = "-Xcc -I/usr/local/include -Xlinker -L/usr/local/lib/ -Xswiftc -I/usr/local/include"
+        if !extraFlags.isEmpty {
+            flags += " " + extraFlags
+        }
+        return flags
+    }
+
     mutating func loadSpec(for environment: Environment) throws -> SwiftServeInstanceSpec {
         if let spec = self.spec {
             return spec

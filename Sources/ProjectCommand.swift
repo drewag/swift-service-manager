@@ -33,7 +33,7 @@ extension PackageService {
 
 private extension PackageService {
     func generateProject() throws {
-        let flags = "-Xcc -I/usr/local/include -Xlinker -L/usr/local/lib/ -Xswiftc -I/usr/local/include"
+        let flags = self.buildFlags
         let _ = try ShellCommand("swift package \(flags) generate-xcodeproj").execute()
     }
 

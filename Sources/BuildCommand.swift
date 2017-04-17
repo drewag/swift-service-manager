@@ -25,7 +25,7 @@ struct BuildCommand: CommandHandler {
 
 extension PackageService {
     func build(for environment: Environment) throws {
-        var flags = "-Xcc -I/usr/local/include -Xlinker -L/usr/local/lib/ -Xcc -I/usr/local/include/libxml2"
+        var flags = self.buildFlags
         flags.append(" --configuration \(environment.rawValue)")
         "Building for \(environment.rawValue)...".log()
         let _ = try ShellCommand("swift build \(flags)", captureOutput: false).execute()
