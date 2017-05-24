@@ -49,10 +49,15 @@ private extension PackageService {
             .write(toFile: "\(name).xcodeproj/xcshareddata/xcschemes/info.xcscheme", atomically: true, encoding: .utf8)
         try self.schemeXML(arguments: ["db", "migrate"])
             .write(toFile: "\(name).xcodeproj/xcshareddata/xcschemes/migrate-database.xcscheme", atomically: true, encoding: .utf8)
-        for scheme in try self.loadSpec(for: .debug).extraSchemes {
-            let name = scheme.name.lowercased().replacingOccurrences(of: " ", with: "-")
-            try self.schemeXML(arguments: scheme.arguments)
-                .write(toFile: "\(self.name).xcodeproj/xcshareddata/xcschemes/\(name).xcscheme", atomically: true, encoding: .utf8)
+        do {
+            for scheme in try self.loadSpec(for: .debug).extraSchemes {
+                let name = scheme.name.lowercased().replacingOccurrences(of: " ", with: "-")
+                try self.schemeXML(arguments: scheme.arguments)
+                    .write(toFile: "\(self.name).xcodeproj/xcshareddata/xcschemes/\(name).xcscheme", atomically: true, encoding: .utf8)
+            }
+        }
+        catch {
+            print("Error generating extra schemes: \(error)")
         }
     }
 
