@@ -1,6 +1,11 @@
 # swift-service-manager
 Manage [Swift Serve](https://github.com/drewag/swift-serve) services locally and remotely more easily
 
+Dependencies
+------------
+    brew install yaml-cpp
+    brew install PostgresSQL
+
 Installation
 -----------
 
