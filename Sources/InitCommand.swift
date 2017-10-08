@@ -46,9 +46,12 @@ private extension PackageService {
             .DS_Store
             .build/
             Packages/
+            Package.resolved
             *.xcodeproj/
             extra_info.json
+            dev_extra_info.json
             database_password.string
+            dev_database_password.string
             *.swp
             *.swo
             """
