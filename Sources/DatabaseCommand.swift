@@ -7,7 +7,7 @@
 //
 
 import CommandLineParser
-import SwiftPlusPlus
+import Swiftlier
 import SwiftServe
 
 struct DatabaseCommand: CommandHandler {
@@ -45,6 +45,7 @@ struct DatabaseCommand: CommandHandler {
 
 extension PackageService {
     mutating func resetDatabase() throws {
+        try String(randomOfLength: 20).write(toFile: "dev_database_password.string", atomically: true, encoding: .utf8)
         try String(randomOfLength: 20).write(toFile: "database_password.string", atomically: true, encoding: .utf8)
         try self.command(named: "Resetting database...", subCommand: "db recreate-role").pipe(to: "psql -q").execute()
         try self.command(subCommand: "db recreate").pipe(to: "psql -q").execute()

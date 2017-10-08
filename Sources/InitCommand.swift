@@ -8,7 +8,7 @@
 
 import Foundation
 import CommandLineParser
-import SwiftPlusPlus
+import Swiftlier
 
 struct InitCommand: CommandHandler {
     static let name: String = "init"
@@ -28,65 +28,77 @@ struct InitCommand: CommandHandler {
 
 private extension PackageService {
     mutating func initialize() throws {
+        try self.generateSwiftVersion()
         try self.generatePackageFile()
         try self.generateMain()
         try self.generateGitIgnore()
         try self.resetDatabase()
     }
 
+    func generateSwiftVersion() throws {
+        let _ = try FileSystem.default.workingDirectory
+            .file(".swift-version")
+            .createFile(containing: "4.0".data(using: .utf8), canOverwrite: true)
+    }
+
     func generateGitIgnore() throws {
-        var ignore = ""
-        ignore += ".DS_Store\n"
-        ignore += "/.build\n"
-        ignore += "/Packages\n"
-        ignore += "/*.xcodeproj\n"
-        ignore += "extra_info.json\n"
-        ignore += "database_password.string\n"
-        try ignore.write(toFile: ".gitignore", atomically: true, encoding: .utf8)
+        let ignore = """
+            .DS_Store
+            .build/
+            Packages/
+            *.xcodeproj/
+            extra_info.json
+            database_password.string
+            *.swp
+            *.swo
+            """
+        let _ = try FileSystem.default.workingDirectory
+            .file(".gitignore")
+            .createFile(containing: ignore.data(using: .utf8), canOverwrite: true)
     }
 
     func generatePackageFile() throws {
-        var package = ""
-        package += "import PackageDescription\n"
-        package += "\n"
-        package += "let package = Package(\n"
-        package += "    name: \"\(name)\",\n"
-        package += "    dependencies: [\n"
-        package += "        .Package(url: \"https://github.com/drewag/swift-serve-kitura.git\", majorVersion: 5),\n"
-        package += "    ]\n"
-        package += ")\n"
-        try package.write(toFile: "Package.swift", atomically: true, encoding: .utf8)
+        let package = """
+            import PackageDescription
+
+            let package = Package(
+                name: "\(name)",
+                dependencies: [
+                    .Package(url: "https://github.com/drewag/swift-serve-kitura.git", majorVersion: 9),
+                ]
+            )
+            """
+
+        let _ = try FileSystem.default.workingDirectory
+            .file("Package.swift")
+            .createFile(containing: package.data(using: .utf8), canOverwrite: true)
     }
 
     func generateMain() throws {
-        var main = ""
-        main += "import Foundation\n"
-        main += "import SwiftServe\n"
-        main += "import CommandLineParser\n"
-        main += "import SwiftServeKitura\n"
-        main += "import SwiftPlusPlus\n"
-        main += "\n"
-        main += "struct ExtraInfo: CodableType {\n"
-        main += "\n"
-        main += "    struct Keys {\n"
-        main += "    }\n"
-        main += "\n"
-        main += "    init(decoder: DecoderType) throws {\n"
-        main += "    }\n"
-        main += "\n"
-        main += "    func encode(_ encoder: EncoderType) {\n"
-        main += "    }\n"
-        main += "}\n"
-        main += "\n"
-        main += "let ServiceInstance = SwiftServeInstance<KituraServer, ExtraInfo>(\n"
-        main += "    domain: \"\(name)\",\n"
-        main += "    databaseChanges: [\n"
-        main += "    ],\n"
-        main += "    routes: [\n"
-        main += "    ],\n"
-        main += "    customizeCommandLineParser: { parser in\n"
-        main += "    }\n"
-        main += ")\n"
-        try main.write(toFile: "Sources/main.swift", atomically: true, encoding: .utf8)
+        let main = """
+            import Foundation
+            import SwiftServe
+            import CommandLineParser
+            import SwiftServeKitura
+            import Swiftlier
+
+            struct ExtraInfo: Codable {
+            }
+
+            let ServiceInstance = SwiftServeInstance<KituraServer, ExtraInfo>(
+                domain: "\(name)",
+                databaseChanges: [
+                ],
+                routes: [
+                ],
+                customizeCommandLineParser: { parser in
+                }
+            )
+            ServiceInstance.run()
+            """
+        let _ = try FileSystem.default.workingDirectory
+            .subdirectory("Sources")
+            .file("main.swift")
+            .createFile(containing: main.data(using: .utf8), canOverwrite: true)
     }
 }

@@ -7,7 +7,7 @@
 //
 
 import CommandLineParser
-import SwiftPlusPlus
+import Swiftlier
 
 struct ProjectCommand: CommandHandler {
     static let name: String = "project"
@@ -62,47 +62,111 @@ private extension PackageService {
     }
 
     func schemeXML(arguments: [String]) -> String {
-        let projectName = "\(self.name).xcodeproj"
-        var xml = ""
-        xml += "<?xml version=\"1.0\" encoding=\"UTF-8\"?>"
-        xml += "<Scheme LastUpgradeVersion = \"0810\" version = \"1.3\">"
-        xml += "<BuildAction parallelizeBuildables = \"YES\" buildImplicitDependencies = \"YES\">"
-        xml += "    <BuildActionEntries>"
-        xml += "        <BuildActionEntry buildForTesting = \"YES\" buildForRunning = \"YES\" buildForProfiling = \"YES\" buildForArchiving = \"YES\" buildForAnalyzing = \"YES\">"
-        xml += "            <BuildableReference  BuildableIdentifier = \"primary\" BlueprintIdentifier = \"OBJ_1045\" BuildableName = \"\(self.name)\" BlueprintName = \"\(self.name)\" ReferencedContainer = \"container:\(projectName)\">"
-        xml += "            </BuildableReference>"
-        xml += "        </BuildActionEntry>"
-        xml += "    </BuildActionEntries>"
-        xml += "</BuildAction>"
-        xml += "<TestAction buildConfiguration = \"Debug\" selectedDebuggerIdentifier = \"Xcode.DebuggerFoundation.Debugger.LLDB\" selectedLauncherIdentifier = \"Xcode.DebuggerFoundation.Launcher.LLDB\" shouldUseLaunchSchemeArgsEnv = \"YES\">"
-        xml += "    <Testables></Testables>"
-        xml += "    <MacroExpansion>"
-        xml += "        <BuildableReference BuildableIdentifier = \"primary\" BlueprintIdentifier = \"OBJ_1045\" BuildableName = \"\(self.name)\" BlueprintName = \"\(self.name)\" ReferencedContainer = \"container:\(projectName)\">"
-        xml += "        </BuildableReference>"
-        xml += "    </MacroExpansion>"
-        xml += "    <AdditionalOptions></AdditionalOptions>"
-        xml += "</TestAction>"
-        xml += "<LaunchAction buildConfiguration = \"Debug\" selectedDebuggerIdentifier = \"Xcode.DebuggerFoundation.Debugger.LLDB\" selectedLauncherIdentifier = \"Xcode.DebuggerFoundation.Launcher.LLDB\" launchStyle = \"0\" useCustomWorkingDirectory = \"YES\" customWorkingDirectory = \"$(PROJECT_DIR)\" ignoresPersistentStateOnLaunch = \"NO\" debugDocumentVersioning = \"YES\" debugServiceExtension = \"internal\" allowLocationSimulation = \"YES\">"
-        xml += "    <BuildableProductRunnable runnableDebuggingMode = \"0\">"
-        xml += "        <BuildableReference BuildableIdentifier = \"primary\" BlueprintIdentifier = \"OBJ_1045\" BuildableName = \"\(self.name)\" BlueprintName = \"\(self.name)\" ReferencedContainer = \"container:\(projectName)\">"
-        xml += "        </BuildableReference>"
-        xml += "    </BuildableProductRunnable>"
-        xml += "    <CommandLineArguments>"
+        var xml = """
+            <?xml version="1.0" encoding="UTF-8"?>
+            <Scheme
+               LastUpgradeVersion = "0900"
+               version = "1.3">
+               <BuildAction
+                  parallelizeBuildables = "YES"
+                  buildImplicitDependencies = "YES">
+                  <BuildActionEntries>
+                     <BuildActionEntry
+                        buildForTesting = "YES"
+                        buildForRunning = "YES"
+                        buildForProfiling = "YES"
+                        buildForArchiving = "YES"
+                        buildForAnalyzing = "YES">
+                        <BuildableReference
+                           BuildableIdentifier = "primary"
+                           BlueprintIdentifier = "\(self.name)::\(self.name)"
+                           BuildableName = "web"
+                           BlueprintName = "web"
+                           ReferencedContainer = "container:\(self.name).xcodeproj">
+                        </BuildableReference>
+                     </BuildActionEntry>
+                  </BuildActionEntries>
+               </BuildAction>
+               <TestAction
+                  buildConfiguration = "Debug"
+                  selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+                  selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+                  language = ""
+                  shouldUseLaunchSchemeArgsEnv = "YES">
+                  <Testables>
+                  </Testables>
+                  <MacroExpansion>
+                     <BuildableReference
+                        BuildableIdentifier = "primary"
+                        BlueprintIdentifier = "\(self.name)::\(self.name)"
+                        BuildableName = "\(self.name)"
+                        BlueprintName = "\(self.name)"
+                        ReferencedContainer = "container:\(self.name).xcodeproj">
+                     </BuildableReference>
+                  </MacroExpansion>
+                  <AdditionalOptions>
+                  </AdditionalOptions>
+               </TestAction>
+               <LaunchAction
+                  buildConfiguration = "Debug"
+                  selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+                  selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+                  language = ""
+                  launchStyle = "0"
+                  useCustomWorkingDirectory = "YES"
+                  customWorkingDirectory = "$(PROJECT_DIR)"
+                  ignoresPersistentStateOnLaunch = "NO"
+                  debugDocumentVersioning = "YES"
+                  debugServiceExtension = "internal"
+                  allowLocationSimulation = "YES">
+                  <BuildableProductRunnable
+                     runnableDebuggingMode = "0">
+                     <BuildableReference
+                        BuildableIdentifier = "primary"
+                        BlueprintIdentifier = "\(self.name)::\(self.name)"
+                        BuildableName = "\(self.name)"
+                        BlueprintName = "\(self.name)"
+                        ReferencedContainer = "container:\(self.name).xcodeproj">
+                     </BuildableReference>
+                  </BuildableProductRunnable>
+                  <CommandLineArguments>
+            """
+
         for argument in arguments {
             xml += "        <CommandLineArgument argument = \"\(argument)\" isEnabled = \"YES\"></CommandLineArgument>"
         }
-        xml += "    </CommandLineArguments>"
-        xml += "    <AdditionalOptions></AdditionalOptions>"
-        xml += "</LaunchAction>"
-        xml += "<ProfileAction buildConfiguration = \"Release\" shouldUseLaunchSchemeArgsEnv = \"YES\" savedToolIdentifier = \"\" useCustomWorkingDirectory = \"NO\" debugDocumentVersioning = \"YES\">"
-        xml += "    <BuildableProductRunnable runnableDebuggingMode = \"0\">"
-        xml += "        <BuildableReference BuildableIdentifier = \"primary\" BlueprintIdentifier = \"OBJ_1045\" BuildableName = \"\(self.name)\" BlueprintName = \"\(self.name)\" ReferencedContainer = \"container:\(projectName)\">"
-        xml += "        </BuildableReference>"
-        xml += "    </BuildableProductRunnable>"
-        xml += "</ProfileAction>"
-        xml += "<AnalyzeAction buildConfiguration = \"Debug\"></AnalyzeAction>"
-        xml += "<ArchiveAction buildConfiguration = \"Release\" revealArchiveInOrganizer = \"YES\"></ArchiveAction>"
-        xml += "</Scheme>"
+
+        xml += """
+                  </CommandLineArguments>
+                  <AdditionalOptions>
+                  </AdditionalOptions>
+               </LaunchAction>
+               <ProfileAction
+                  buildConfiguration = "Release"
+                  shouldUseLaunchSchemeArgsEnv = "YES"
+                  savedToolIdentifier = ""
+                  useCustomWorkingDirectory = "NO"
+                  debugDocumentVersioning = "YES">
+                  <BuildableProductRunnable
+                     runnableDebuggingMode = "0">
+                     <BuildableReference
+                        BuildableIdentifier = "primary"
+                        BlueprintIdentifier = "web::web"
+                        BuildableName = "web"
+                        BlueprintName = "web"
+                        ReferencedContainer = "container:web.xcodeproj">
+                     </BuildableReference>
+                  </BuildableProductRunnable>
+               </ProfileAction>
+               <AnalyzeAction
+                  buildConfiguration = "Debug">
+               </AnalyzeAction>
+               <ArchiveAction
+                  buildConfiguration = "Release"
+                  revealArchiveInOrganizer = "YES">
+               </ArchiveAction>
+            </Scheme>
+            """
         return xml
     }
 }

@@ -7,10 +7,10 @@
 //
 
 import SwiftServe
-import SwiftPlusPlus
+import Swiftlier
 import Foundation
 
-struct PackageService {
+struct PackageService: ErrorGenerating {
     enum Environment: String {
         case release
         case debug
@@ -83,23 +83,23 @@ private extension PackageService {
             , let name = (try JSON(data: jsonData))["name"]?.string
             else
         {
-                throw LocalUserReportableError(source: "PackageService", operation: "getting package name", message: "Could not parse package dump", reason: .internal)
+                throw self.error("getting package name", because: "Could not parse package dump")
         }
         return name
     }
 
     mutating func validateSpec(for environment: Environment) throws -> SwiftServeInstanceSpec {
         let jsonString = try ShellCommand(".build/\(environment.rawValue)/\(self.name) info").execute()
-        let object = try JSONSerialization.jsonObject(with: jsonString.data(using: .utf8)!, options: JSONSerialization.ReadingOptions())
-        let spec: SwiftServeInstanceSpec = try NativeTypesDecoder.decodableTypeFromObject(object, mode: .saveLocally)
+        let data = jsonString.data(using: .utf8)!
+        let spec = try JSONDecoder().decode(SwiftServeInstanceSpec.self, from: data)
 
         guard spec.version.major == 5 else {
-            throw LocalUserReportableError(source: "PackageService", operation: "validating service spec", message: "Incorrect version", reason: .user)
+            throw self.userError("validating service spec", because: "Incorrect version")
         }
 
         if !FileManager.default.fileExists(atPath: "extra_info.json") {
             guard let extraInfoDict = try JSONSerialization.jsonObject(with: spec.extraInfoSpec.data(using: .utf8)!, options: JSONSerialization.ReadingOptions()) as? [String:String] else {
-                throw LocalUserReportableError(source: "PackageService", operation: "validating service spec", message: "Unrecognized extra info format", reason: .user)
+                throw self.userError("validating service spec", because: "Unrecognized extra info format")
             }
 
             if extraInfoDict.count > 0 {
@@ -121,7 +121,7 @@ private extension PackageService {
         var type = type
         let isOptional = type.hasSuffix("?")
         if isOptional {
-            type = type.substring(to: type.characters.count - 1)
+            type = type.substring(to: type.index(at: type.characters.count - 1))
         }
 
         var input: String = ""
@@ -171,7 +171,7 @@ private extension PackageService {
                 }
                 return value
             default:
-                throw LocalUserReportableError(source: "PackageService", operation: "validating service spec", message: "Unreconized type: \(type)", reason: .user)
+                throw self.userError("validating service spec", because: "Unreconized type: \(type)")
             }
         } while input.isEmpty
 

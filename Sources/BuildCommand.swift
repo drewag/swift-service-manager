@@ -7,7 +7,7 @@
 //
 
 import CommandLineParser
-import SwiftPlusPlus
+import Swiftlier
 
 struct BuildCommand: CommandHandler {
     static let name: String = "build"
@@ -28,6 +28,6 @@ extension PackageService {
         var flags = self.buildFlags
         flags.append(" --configuration \(environment.rawValue)")
         "Building for \(environment.rawValue)...".log()
-        let _ = try ShellCommand("swift build \(flags)", captureOutput: false).execute()
+        try ShellCommand("swift build \(flags)", captureOutput: false).execute()
     }
 }
