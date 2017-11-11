@@ -30,9 +30,9 @@ struct PackageService: ErrorGenerating {
 
     var buildFlags: String {
         #if os(macOS)
-            let extraFlags = (try? String(contentsOfFile: "extra_mac_build_flags.txt")) ?? ""
+            let extraFlags = ((try? FileSystem.default.workingDirectory.file("extra_mac_build_flags.txt").file?.string()) ?? "") ?? ""
         #elseif os(Linux)
-            let extraFlags = (try? String(contentsOfFile: "extra_linux_build_flags.txt")) ?? ""
+            let extraFlags = ((try? FileSystem.default.workingDirectory.file("extra_linux_build_flags.txt").file?.string()) ?? "") ?? ""
         #else
             let extraFlags = ""
         #endif
