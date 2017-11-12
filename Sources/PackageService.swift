@@ -39,7 +39,7 @@ struct PackageService: ErrorGenerating {
             let extraFlags = ""
         #endif
         if !extraFlags.isEmpty {
-            flags += " " + extraFlags
+            flags += " " + extraFlags.chomp()
         }
         return flags
     }
@@ -122,7 +122,7 @@ private extension PackageService {
         var type = type
         let isOptional = type.hasSuffix("?")
         if isOptional {
-            type = type.substring(to: type.index(at: type.characters.count - 1))
+            type = type.substring(to: type.index(at: type.count - 1))
         }
 
         var input: String = ""
@@ -177,5 +177,16 @@ private extension PackageService {
         } while input.isEmpty
 
         fatalError("Should not reach here")
+    }
+}
+
+extension String {
+    /// Removes a single trailing newline if the string has one.
+    func chomp() -> String {
+        if self.hasSuffix("\n") {
+            return self[self.startIndex ..< self.index(before: self.endIndex)]
+        } else {
+            return self
+        }
     }
 }
