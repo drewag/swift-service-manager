@@ -11,10 +11,10 @@ prod: FLAGS += --configuration release
 prod: service
 
 project:
-	swift package -Xcc -I/usr/local/include -Xlinker -L/usr/local/lib/ -Xswiftc -I/usr/local/include generate-xcodeproj
+	swift package generate-xcodeproj
 
 clean:
-	swift build --clean
+	swift package clean
 
 install: prod
 	cp .build/release/ssm /usr/local/bin/

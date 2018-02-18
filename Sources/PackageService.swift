@@ -29,11 +29,10 @@ struct PackageService: ErrorGenerating {
     }
 
     var buildFlags: String {
-        var flags = "-Xcc -I/usr/local/include -Xlinker -L/usr/local/lib/ -Xswiftc -I/usr/local/include"
+        var flags = ""
         #if os(macOS)
             let extraFlags = ((try? FileSystem.default.workingDirectory.file("extra_mac_build_flags.txt").file?.string()) ?? "") ?? ""
         #elseif os(Linux)
-            flags += " -Xcc -I/usr/include/postgresql/"
             let extraFlags = ((try? FileSystem.default.workingDirectory.file("extra_linux_build_flags.txt").file?.string()) ?? "") ?? ""
         #else
             let extraFlags = ""

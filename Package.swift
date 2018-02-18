@@ -5,6 +5,6 @@ let package = Package(
     dependencies: [
         .Package(url: "https://github.com/drewag/command-line-parser.git", majorVersion: 2),
         .Package(url: "https://github.com/drewag/Swiftlier.git", majorVersion: 4),
-        .Package(url: "https://github.com/drewag/swift-serve.git", majorVersion: 9),
+        .Package(url: "https://github.com/drewag/swift-serve.git", majorVersion: 11),
     ]
 )
