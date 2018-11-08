@@ -121,7 +121,7 @@ private extension PackageService {
         var type = type
         let isOptional = type.hasSuffix("?")
         if isOptional {
-            type = type.substring(to: type.index(at: type.count - 1))
+            type = String(type[...type.index(at: type.count - 1)])
         }
 
         var input: String = ""
@@ -183,7 +183,7 @@ extension String {
     /// Removes a single trailing newline if the string has one.
     func chomp() -> String {
         if self.hasSuffix("\n") {
-            return self[self.startIndex ..< self.index(before: self.endIndex)]
+            return String(self[self.startIndex ..< self.index(before: self.endIndex)])
         } else {
             return self
         }

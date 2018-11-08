@@ -1,10 +1,15 @@
+// swift-tools-version:4.0
+
 import PackageDescription
 
 let package = Package(
     name: "ssm",
     dependencies: [
-        .Package(url: "https://github.com/drewag/command-line-parser.git", majorVersion: 2),
-        .Package(url: "https://github.com/drewag/Swiftlier.git", majorVersion: 4),
-        .Package(url: "https://github.com/drewag/swift-serve.git", majorVersion: 11),
+        .package(url: "https://github.com/drewag/command-line-parser.git", from: "2.0.0"),
+        .package(url: "https://github.com/drewag/Swiftlier.git", from: "4.0.0"),
+        .package(url: "https://github.com/drewag/swift-serve.git", from: "13.2.0"),
+    ],
+    targets: [
+        .target(name: "ssm", dependencies: ["CommandLineParser", "Swiftlier", "SwiftServe"], path: "Sources"),
     ]
 )
