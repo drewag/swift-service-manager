@@ -6,6 +6,7 @@
 //
 //
 
+import Foundation
 import CommandLineParser
 import Swiftlier
 
@@ -15,19 +16,27 @@ struct ProjectCommand: CommandHandler {
     static let longDescription: String? = nil
 
     static func handler(parser: Parser) throws {
+        let noBuild = parser.option(named: "no-build", abbreviatedWith: "n")
+
         try parser.parse()
 
+
+
         var service = try PackageService()
-        try service.generateAndOpenProject()
+        try service.generateProject(noBuild: noBuild.wasPresent)
     }
 }
 
 extension PackageService {
-    mutating func generateAndOpenProject() throws {
+    mutating func generateProject(noBuild: Bool) throws {
         "Generating project...".log()
         try self.generateProject()
-        try self.generateSchemes()
-        try self.openProject()
+        try self.generateSchemes(noBuild: noBuild)
+    }
+
+    func openProject() throws {
+        print("Openning project...")
+        let _ = try ShellCommand("open \(self.name).xcodeproj").execute()
     }
 }
 
@@ -36,28 +45,27 @@ private extension PackageService {
         let flags = self.buildFlags
         let _ = try ShellCommand("swift package \(flags) generate-xcodeproj").execute()
     }
-
-    func openProject() throws {
-        print("Openning project...")
-        let _ = try ShellCommand("open \(self.name).xcodeproj").execute()
-    }
-
-    mutating func generateSchemes() throws {
+    mutating func generateSchemes(noBuild: Bool) throws {
         try self.schemeXML(arguments: ["server", "8080"])
             .write(toFile: "\(name).xcodeproj/xcshareddata/xcschemes/server.xcscheme", atomically: true, encoding: .utf8)
         try self.schemeXML(arguments: ["info"])
             .write(toFile: "\(name).xcodeproj/xcshareddata/xcschemes/info.xcscheme", atomically: true, encoding: .utf8)
         try self.schemeXML(arguments: ["db", "migrate"])
             .write(toFile: "\(name).xcodeproj/xcshareddata/xcschemes/migrate-database.xcscheme", atomically: true, encoding: .utf8)
-        do {
-            for scheme in try self.loadSpec(for: .debug).extraSchemes {
-                let name = scheme.name.lowercased().replacingOccurrences(of: " ", with: "-")
-                try self.schemeXML(arguments: scheme.arguments)
-                    .write(toFile: "\(self.name).xcodeproj/xcshareddata/xcschemes/\(name).xcscheme", atomically: true, encoding: .utf8)
+        if !noBuild {
+            do {
+                for scheme in try self.loadSpec(for: .debug).extraSchemes {
+                    let name = scheme.name.lowercased().replacingOccurrences(of: " ", with: "-")
+                    try self.schemeXML(arguments: scheme.arguments)
+                        .write(toFile: "\(self.name).xcodeproj/xcshareddata/xcschemes/\(name).xcscheme", atomically: true, encoding: .utf8)
+                }
+            }
+            catch {
+                print("Error generating extra schemes: \(error)")
             }
         }
-        catch {
-            print("Error generating extra schemes: \(error)")
+        else {
+            print("Not generating extra schemes because the no-build option was set")
         }
     }
 

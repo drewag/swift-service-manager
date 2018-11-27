@@ -48,6 +48,11 @@ struct PackageService: ErrorGenerating {
             return spec
         }
 
+        if self.builtEnvironments[environment] == nil {
+            try self.build(for: environment)
+            self.builtEnvironments[environment] = ()
+        }
+
         let spec = try self.validateSpec(for: environment)
         self.spec = spec
         return spec

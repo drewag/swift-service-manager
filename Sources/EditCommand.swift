@@ -33,7 +33,8 @@ struct EditCommand: CommandHandler, ErrorGenerating {
 
             var service = try PackageService()
             try service.resetDatabase()
-            try service.generateAndOpenProject()
+            try service.generateProject(noBuild: false)
+            try service.openProject()
 
             return
         }
