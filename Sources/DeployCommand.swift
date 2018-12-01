@@ -73,6 +73,10 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
         try service.execute(swift: "build")
         "done".log(as: .good)
 
+        "Generating files..............".log(terminator: "")
+        try service.execute(".build/debug/\(executable.name) \(environment.configuration) regenerate \(environment.remoteServicePrefix)\(spec.domain)")
+        "done".log(as: .good)
+
         "Migrating the test database...".log(terminator: "")
         try service.execute(".build/debug/\(executable.name) \(environment.configuration) --test db migrate")
         "done".log(as: .good)
