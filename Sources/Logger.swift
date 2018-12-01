@@ -14,7 +14,7 @@ class Logger {
         case neutral = 34
     }
 
-    static func log(_ string: String, type: LogType = .neutral) {
+    static func log(_ string: String, type: LogType = .neutral, terminator: String = "\n") {
         let prefix: String
         let suffix: String
         switch type {
@@ -25,12 +25,12 @@ class Logger {
             prefix = "\u{001B}[0;\(type.rawValue)m"
             suffix = "\u{001B}[m"
         }
-        print("\(prefix)\(string)\(suffix)")
+        print("\(prefix)\(string)\(suffix)", terminator: terminator)
     }
 }
 
 extension String {
-    func log(as type: Logger.LogType = .neutral) {
+    func log(as type: Logger.LogType = .neutral, terminator: String = "\n") {
         Logger.log(self, type: type)
     }
 }

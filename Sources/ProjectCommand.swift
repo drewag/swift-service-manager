@@ -35,7 +35,7 @@ extension PackageService {
     }
 
     func openProject() throws {
-        print("Openning project...")
+        "Openning project...".log()
         let _ = try ShellCommand("open \(self.name).xcodeproj").execute()
     }
 }
@@ -61,11 +61,11 @@ private extension PackageService {
                 }
             }
             catch {
-                print("Error generating extra schemes: \(error)")
+                throw self.error("generating extra schemes", from: error)
             }
         }
         else {
-            print("Not generating extra schemes because the no-build option was set")
+            "Not generating extra schemes because the no-build option was set".log()
         }
     }
 

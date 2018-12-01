@@ -16,6 +16,7 @@ parser.command(EditCommand.self)
 parser.command(RunCommand.self)
 parser.command(UpdateCommand.self)
 parser.command(CustomCommand.self)
+parser.command(DeployCommand.self)
 
 do {
     try parser.parse()

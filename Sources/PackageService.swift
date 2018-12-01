@@ -11,14 +11,10 @@ import Swiftlier
 import Foundation
 
 struct PackageService: ErrorGenerating {
-    enum Environment: String {
-        case release
-        case debug
-    }
-
     let name: String
     private var builtEnvironments = [Environment:Void]()
     fileprivate var spec: SwiftServeInstanceSpec? = nil
+    fileprivate var desc: PackageDescription? = nil
 
     var databaseName: String {
         return self.name.replacingOccurrences(of: ".", with: "_")
@@ -41,6 +37,16 @@ struct PackageService: ErrorGenerating {
             flags += " " + extraFlags.chomp()
         }
         return flags
+    }
+
+    mutating func loadDescription() throws -> PackageDescription {
+        if let desc = self.desc {
+            return desc
+        }
+
+        let json = try ShellCommand("swift package describe --type json").execute()
+        let data = json.data(using: .utf8) ?? Data()
+        return try JSONDecoder().decode(PackageDescription.self, from: data)
     }
 
     mutating func loadSpec(for environment: Environment) throws -> SwiftServeInstanceSpec {
