@@ -58,7 +58,7 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
 
         "Cloning latest code......".log(terminator: "")
         try service.execute("rm -r \(tempDirectory) || true")
-        try service.execute("git clone \(repository) \(tempDirectory)")
+        try service.execute("ssh-agent bash -c 'ssh-add ~/.ssh/\(spec.domain); git clone \(repository) \(tempDirectory)'")
         try service.execute("cp \(finalDirectory)/database_password.string \(tempDirectory)/database_password.string")
         try service.execute("cp \(finalDirectory)/extra_info.json \(tempDirectory)/extra_info.json")
         "done".log(as: .good)
