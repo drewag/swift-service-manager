@@ -25,7 +25,12 @@ struct RemoteServerService: ErrorGenerating {
         try self.ssh.authenticate(username: actualUsername, privateKey: privateKey)
     }
 
-    mutating func change(to directory: String) throws {
+    mutating func change(to directory: String?) throws {
+        guard let directory = directory else {
+            self.workingDirectory = nil
+            return
+        }
+
         do {
             try self.execute("touch \(directory)")
             self.workingDirectory = directory

@@ -27,6 +27,10 @@ enum Environment: String {
         }
     }
 
+    var remoteTempDirectoryPrefix: String {
+        return "/tmp/\(self.remoteServicePrefix)"
+    }
+
     var remoteDirectoryPrefix: String {
         return "/var/www/\(self.remoteServicePrefix)"
     }

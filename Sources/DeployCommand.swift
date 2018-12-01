@@ -47,15 +47,23 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
 
         try packageService.test()
 
-        var service = try RemoteServerService(host: spec.domain)
-        try service.change(to: "\(environment.remoteDirectoryPrefix)\(spec.domain)")
-
         "Deploying \(environment.name)...".log()
         "----------------------------------".log()
 
-        "Pulling down latest code......".log(terminator: "")
-        try service.execute("git pull")
+        let repository = try ShellCommand("git config --get remote.origin.url").execute().chomp()
+
+        var service = try RemoteServerService(host: spec.domain)
+        let tempDirectory = "\(environment.remoteTempDirectoryPrefix)\(spec.domain)"
+        let finalDirectory = "\(environment.remoteDirectoryPrefix)\(spec.domain)"
+
+        "Cloning latest code......".log(terminator: "")
+        try service.execute("rm -r \(tempDirectory) || true")
+        try service.execute("git clone \(repository) \(tempDirectory)")
+        try service.execute("cp \(finalDirectory)/database_password.string \(tempDirectory)/database_password.string")
+        try service.execute("cp \(finalDirectory)/extra_info.json \(tempDirectory)/extra_info.json")
         "done".log(as: .good)
+
+        try service.change(to: tempDirectory)
 
         "Updating packages.............".log(terminator: "")
         try service.execute(swift: "package update")
@@ -79,6 +87,14 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
 
         "Migrating the database........".log(terminator: "")
         try service.execute(".build/release/\(executable.name) \(environment.configuration) db migrate")
+        "done".log(as: .good)
+
+        try service.change(to: nil)
+
+        "Replacing install.............".log(terminator: "")
+
+        try service.execute("cp -Trf \(tempDirectory) \(finalDirectory)")
+        try service.execute("rm -r \(tempDirectory)")
         "done".log(as: .good)
 
         "Restaring  the service........".log(terminator: "")
