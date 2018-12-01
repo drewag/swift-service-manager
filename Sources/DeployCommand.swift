@@ -49,7 +49,7 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
 
         var service = try RemoteServerService(host: spec.domain)
         try service.change(to: "\(environment.remoteDirectoryPrefix)\(spec.domain)")
-        
+
         "Deploying \(environment.name)...".log()
         "----------------------------------".log()
 

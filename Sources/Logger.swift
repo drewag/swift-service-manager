@@ -31,6 +31,6 @@ class Logger {
 
 extension String {
     func log(as type: Logger.LogType = .neutral, terminator: String = "\n") {
-        Logger.log(self, type: type)
+        Logger.log(self, type: type, terminator: terminator)
     }
 }
