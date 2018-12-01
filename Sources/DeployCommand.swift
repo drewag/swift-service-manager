@@ -61,6 +61,7 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
         try service.execute("ssh-agent bash -c 'ssh-add ~/.ssh/\(spec.domain); git clone \(repository) \(tempDirectory)'")
         try service.execute("cp \(finalDirectory)/database_password.string \(tempDirectory)/database_password.string")
         try service.execute("cp \(finalDirectory)/extra_info.json \(tempDirectory)/extra_info.json")
+        try service.execute("cp \(finalDirectory)/dev_extra_info.json \(tempDirectory)/dev_extra_info.json")
         "done".log(as: .good)
 
         try service.change(to: tempDirectory)
