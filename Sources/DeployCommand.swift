@@ -56,7 +56,7 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
         let tempDirectory = "\(environment.remoteTempDirectoryPrefix)\(spec.domain)"
         let finalDirectory = "\(environment.remoteDirectoryPrefix)\(spec.domain)"
 
-        "Cloning latest code......".log(terminator: "")
+        "Cloning latest code...........".log(terminator: "")
         try service.execute("rm -r \(tempDirectory) || true")
         try service.execute("ssh-agent bash -c 'ssh-add ~/.ssh/\(spec.domain); git clone \(repository) \(tempDirectory)'")
         try service.execute("cp \(finalDirectory)/database_password.string \(tempDirectory)/database_password.string")
@@ -98,8 +98,9 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
 
         "Replacing install.............".log(terminator: "")
 
-        try service.execute("cp -Trf \(tempDirectory) \(finalDirectory)")
-        try service.execute("rm -r \(tempDirectory)")
+        try service.execute("rm -rf \(finalDirectory)")
+        try service.execute("cp -r \(tempDirectory) \(finalDirectory)")
+        try service.execute("rm -rf \(tempDirectory)")
         "done".log(as: .good)
 
         "Restaring  the service........".log(terminator: "")
