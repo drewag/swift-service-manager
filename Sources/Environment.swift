@@ -5,9 +5,20 @@
 //  Created by Andrew J Wagner on 11/30/18.
 //
 
+import SwiftServe
+
 enum Environment: String {
     case release
     case debug
+
+    var serviceEnvironment: SwiftServiceEnvironment {
+        switch self {
+        case .release:
+            return .production
+        case .debug:
+            return .development
+        }
+    }
 
     var name: String {
         switch self {

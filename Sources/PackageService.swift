@@ -74,11 +74,12 @@ struct PackageService: ErrorGenerating {
         let _ = try self.loadSpec(for: environment)
 
         named?.log(as: .neutral)
-        return ShellCommand(".build/\(environment.rawValue)/\(self.name) \(subCommand)", captureOutput: captureOutput)
+        print(".build/\(environment.rawValue)/\(self.name) \(environment.configuration) \(subCommand)")
+        return ShellCommand(".build/\(environment.rawValue)/\(self.name) \(environment.configuration) \(subCommand)", captureOutput: captureOutput)
     }
 
     mutating func queryDatabaseCommand(with query: String) -> ShellCommand {
-        return ShellCommand("echo \(query)").pipe(to: "psql -d \(self.databaseName)", captureOutput: false)
+        return ShellCommand("echo \(query)").pipe(to: "/usr/local/bin/psql -d \(self.databaseName)", captureOutput: false)
     }
 
     @discardableResult

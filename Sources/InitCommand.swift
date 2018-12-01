@@ -32,7 +32,7 @@ private extension PackageService {
         try self.generatePackageFile()
         try self.generateMain()
         try self.generateGitIgnore()
-        try self.resetDatabase()
+        try self.resetDatabase(for: .debug, includingRole: true, includingMigration: true)
     }
 
     func generateSwiftVersion() throws {

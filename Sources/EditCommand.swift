@@ -32,7 +32,7 @@ struct EditCommand: CommandHandler, ErrorGenerating {
             }
 
             var service = try PackageService()
-            try service.resetDatabase()
+            try service.resetDatabase(for: .debug, includingRole: true, includingMigration: true)
             try service.generateProject(noBuild: false)
             try service.openProject()
 
