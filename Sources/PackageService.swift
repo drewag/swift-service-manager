@@ -24,7 +24,7 @@ struct PackageService: ErrorGenerating {
         self.name = try type(of: self).getPackageName()
     }
 
-    var buildFlags: String {
+    var buildFlags: String {    
         var flags = ""
         #if os(macOS)
             let extraFlags = ((try? FileSystem.default.workingDirectory.file("extra_mac_build_flags.txt").file?.string()) ?? "") ?? ""

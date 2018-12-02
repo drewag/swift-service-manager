@@ -32,7 +32,7 @@ struct RemoteServerService: ErrorGenerating {
         }
 
         do {
-            try self.execute("touch \(directory)")
+            try self.execute("if [ ! -d '\(directory)' ]; then false; fi")
             self.workingDirectory = directory
         }
         catch {

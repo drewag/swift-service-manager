@@ -6,6 +6,8 @@
 //
 //
 
+import Foundation
+
 class Logger {
     enum LogType: Int {
         case normal = 0
@@ -26,6 +28,7 @@ class Logger {
             suffix = "\u{001B}[m"
         }
         print("\(prefix)\(string)\(suffix)", terminator: terminator)
+        fflush(stdout)
     }
 }
 

@@ -19,8 +19,21 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
 
         try parser.parse()
 
-        let environment: Environment = environmentPromise.parsedValue == "prod" ? .release : .debug
+        var packageService = try PackageService()
+        try packageService.deploy(environmentPromise.parsedValue == "prod" ? .release : .debug)
+    }
+}
 
+private extension PackageService {
+    mutating func update(for environment: Environment) throws {
+        "Pulling down changes to repository...".log()
+        try ShellCommand("git pull").execute()
+        "Updating dependencies...".log()
+        try ShellCommand("swift package update", captureOutput: false).execute()
+        try self.migrateDatabase(for: environment)
+    }
+
+    mutating func deploy(_ environment: Environment) throws {
         do {
             try ShellCommand("git diff-index --quiet HEAD --").execute()
         }
@@ -34,8 +47,7 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
             throw self.userError("deploying", because: "you have unpushed commits")
         }
 
-        var packageService = try PackageService()
-        let description = try packageService.loadDescription()
+        let description = try self.loadDescription()
         guard description.executables.count <= 1 else {
             throw self.userError("deploying", because: "multiple executables were found and that is not supported yet")
         }
@@ -43,9 +55,9 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
             throw self.userError("deploying", because: "no executable found")
         }
 
-        let spec = try packageService.loadSpec(for: .release) // Always build from prod because that is what will be used on the server
+        let spec = try self.loadSpec(for: .release) // Always build from prod because that is what will be used on the server
 
-        try packageService.test()
+        try self.test()
 
         "Deploying \(environment.name)...".log()
         "----------------------------------".log()
@@ -64,6 +76,12 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
         try service.execute("cp \(finalDirectory)/dev_extra_info.json \(tempDirectory)/dev_extra_info.json")
         "done".log(as: .good)
 
+        "Copying data directories......".log(terminator: "")
+        for directory in spec.dataDirectories {
+            try service.execute("ln -s \(finalDirectory)/\(directory) \(tempDirectory)/\(directory)")
+        }
+        "done".log(as: .good)
+
         try service.change(to: tempDirectory)
 
         "Updating packages.............".log(terminator: "")
@@ -71,7 +89,8 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
         "done".log(as: .good)
 
         "Building for debug............".log(terminator: "")
-        try service.execute(swift: "build")
+        let extraFlagsCommand = "[ -r extra_linux_build_flags.txt ] && cat extra_linux_build_flags.txt"
+        try service.execute(swift: "build `\(extraFlagsCommand)`")
         "done".log(as: .good)
 
         "Generating files..............".log(terminator: "")
@@ -83,41 +102,31 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
         "done".log(as: .good)
 
         "Testing.......................".log(terminator: "")
-        try service.execute(swift: "test")
+        try service.execute(swift: "test `\(extraFlagsCommand)`")
         "done".log(as: .good)
 
         "Building for release..........".log(terminator: "")
-        try service.execute(swift: "build -c release")
+        try service.execute(swift: "build -c release `\(extraFlagsCommand)`")
         "done".log(as: .good)
 
         "Migrating the database........".log(terminator: "")
         try service.execute(".build/release/\(executable.name) \(environment.configuration) db migrate")
         "done".log(as: .good)
 
-        try service.change(to: nil)
-
-        "Replacing install.............".log(terminator: "")
-
-        try service.execute("rm -rf \(finalDirectory)")
-        try service.execute("cp -r \(tempDirectory) \(finalDirectory)")
-        try service.execute("rm -rf \(tempDirectory)")
+        "Installing....................".log(terminator: "")
+        try service.execute("rm -rf \(finalDirectory)/.build")
+        try service.execute("mkdir -p \(finalDirectory)/.build/release/")
+        try service.execute("cp -r \(tempDirectory)/.build/release/\(executable.name) \(finalDirectory)/.build/release/")
+        try service.change(to: finalDirectory)
+        try service.execute("ssh-agent bash -c 'ssh-add ~/.ssh/\(spec.domain); git pull'")
         "done".log(as: .good)
 
         "Restaring  the service........".log(terminator: "")
         try service.execute("sudo service \(environment.remoteServicePrefix)\(spec.domain) restart")
+        try service.execute("rm -rf \(tempDirectory)")
         "done".log(as: .good)
 
         "----------------------------------".log()
         "Deployed Successfully".log(as: .good)
-    }
-}
-
-private extension PackageService {
-    mutating func update(for environment: Environment) throws {
-        "Pulling down changes to repository...".log()
-        try ShellCommand("git pull").execute()
-        "Updating dependencies...".log()
-        try ShellCommand("swift package update", captureOutput: false).execute()
-        try self.migrateDatabase(for: environment)
     }
 }
