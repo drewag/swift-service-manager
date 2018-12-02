@@ -79,20 +79,26 @@ extension PackageService {
     mutating func pullDatabase(for from: Environment, into to: Environment) throws {
         let spec = try self.loadSpec(for: .debug)
 
-        "Downloading production database...".log(terminator: "")
+        "Downloading \(from.name) database...".log(terminator: "")
         let service = try RemoteServerService(host: spec.domain)
         let remoteDatabaseName = from.serviceEnvironment.databaseName(fromDomain: spec.domain)
         let remoteDatabaseUser = from.serviceEnvironment.databaseRole(fromDomain: spec.domain)
-        let dump = try service.execute("PGPASSWORD=`cat /var/www/\(spec.domain)/database_password.string` pg_dump -h 127.0.0.1 \(remoteDatabaseName) -U \(remoteDatabaseUser)")
-        let downloadPath = "/tmp/\(spec.domain).bk"
-        try dump.write(toFile: downloadPath, atomically: true, encoding: .utf8)
+        let downloadPath = "\(from.remoteTempDirectoryPrefix)\(spec.domain).bk"
+        try service.execute("PGPASSWORD=`cat \(from.remoteDirectoryPrefix)\(spec.domain)/database_password.string` pg_dump -h 127.0.0.1 \(remoteDatabaseName) -U \(remoteDatabaseUser) > \(downloadPath)")
+        try ShellCommand("scp \(spec.domain):\(downloadPath) \(downloadPath)").execute()
         "done".log(as: .good)
 
         let localDatabaseName = to.serviceEnvironment.databaseName(fromDomain: spec.domain)
-        "Applying to local database........".log(terminator: "")
+        "Applying to local database........".log()
         try ShellCommand("/usr/local/bin/psql -c 'DROP DATABASE IF EXISTS \(localDatabaseName)'").execute()
         try ShellCommand("/usr/local/bin/psql -c 'CREATE DATABASE \(localDatabaseName)'").execute()
         try ShellCommand("cat '\(downloadPath)'").pipe(to: "/usr/local/bin/psql \(to.serviceEnvironment.databaseName(fromDomain: spec.domain)) -q").execute()
+        "done".log(as: .good)
+
+        "Syncing data directories...".log()
+        for directory in spec.dataDirectories {
+            try ShellCommand("rsync -cazP \(spec.domain):\(from.remoteDirectoryPrefix)\(spec.domain)/\(directory) .", captureOutput: false).execute()
+        }
         "done".log(as: .good)
     }
 }
