@@ -94,7 +94,7 @@ private extension PackageService {
         "done".log(as: .good)
 
         "Generating files..............".log(terminator: "")
-        try service.execute(".build/debug/\(executable.name) \(environment.configuration) regenerate \(environment.remoteServicePrefix)\(spec.domain)")
+        try service.execute(".build/debug/\(executable.name) \(environment.configuration) regenerate https://\(environment.remoteServicePrefix)\(spec.domain)")
         "done".log(as: .good)
 
         "Migrating the test database...".log(terminator: "")
