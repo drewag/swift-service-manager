@@ -114,6 +114,8 @@ private extension PackageService {
         "done".log(as: .good)
 
         "Installing....................".log(terminator: "")
+        try service.execute("rm -rf \(finalDirectory)/Generated")
+        try service.execute("cp -r \(tempDirectory)/Generated \(finalDirectory)")
         try service.execute("rm -rf \(finalDirectory)/.build")
         try service.execute("mkdir -p \(finalDirectory)/.build/release/")
         try service.execute("cp -r \(tempDirectory)/.build/release/\(executable.name) \(finalDirectory)/.build/release/")
