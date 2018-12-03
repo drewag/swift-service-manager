@@ -75,18 +75,18 @@ extension PackageService {
 
         "Downloading \(from.name) database...".log(terminator: "")
         let service = try RemoteServerService(host: spec.domain)
-        let remoteDatabaseName = from.serviceEnvironment.databaseName(fromDomain: spec.domain)
-        let remoteDatabaseUser = from.serviceEnvironment.databaseRole(fromDomain: spec.domain)
+        let remoteDatabaseName = from.serviceEnvironment.databaseName(from: spec)
+        let remoteDatabaseUser = from.serviceEnvironment.databaseRole(from: spec)
         let downloadPath = "\(from.remoteTempDirectoryPrefix)\(spec.domain).bk"
         try service.execute("PGPASSWORD=`cat \(from.remoteDirectoryPrefix)\(spec.domain)/database_password.string` pg_dump -h 127.0.0.1 \(remoteDatabaseName) -U \(remoteDatabaseUser) > \(downloadPath)")
         try ShellCommand("scp \(spec.domain):\(downloadPath) \(downloadPath)").execute()
         "done".log(as: .good)
 
-        let localDatabaseName = to.serviceEnvironment.databaseName(fromDomain: spec.domain)
+        let localDatabaseName = to.serviceEnvironment.databaseName(from: spec)
         "Applying to local database........".log()
         try ShellCommand("/usr/local/bin/psql -c 'DROP DATABASE IF EXISTS \(localDatabaseName)'").execute()
         try ShellCommand("/usr/local/bin/psql -c 'CREATE DATABASE \(localDatabaseName)'").execute()
-        try ShellCommand("cat '\(downloadPath)'").pipe(to: "/usr/local/bin/psql \(to.serviceEnvironment.databaseName(fromDomain: spec.domain)) -q").execute()
+        try ShellCommand("cat '\(downloadPath)'").pipe(to: "/usr/local/bin/psql \(to.serviceEnvironment.databaseName(from: spec)) -q").execute()
         "done".log(as: .good)
 
         "Syncing data directories...".log()
