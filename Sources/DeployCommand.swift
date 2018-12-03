@@ -17,11 +17,12 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
     static func handler(parser: Parser) throws {
         let environmentPromise = parser.string(named: "configuration")
         let executable = parser.optionalString(named: "executable")
+        let resume = parser.option(named: "resume")
 
         try parser.parse()
 
         var packageService = PackageService(executableName: executable.parsedValue)
-        try packageService.deploy(environmentPromise.parsedValue == "prod" ? .release : .debug)
+        try packageService.deploy(environmentPromise.parsedValue == "prod" ? .release : .debug, resume: resume.wasPresent)
     }
 }
 
@@ -34,25 +35,29 @@ private extension PackageService {
         try self.migrateDatabase(for: environment)
     }
 
-    mutating func deploy(_ environment: Environment) throws {
-        do {
-            try ShellCommand("git diff-index --quiet HEAD --").execute()
-        }
-        catch {
-            throw self.userError("deploying", because: "you have uncommited changes")
-        }
+    mutating func deploy(_ environment: Environment, resume: Bool) throws {
+        if !resume {
+            do {
+                try ShellCommand("git diff-index --quiet HEAD --").execute()
+            }
+            catch {
+                throw self.userError("deploying", because: "you have uncommited changes")
+            }
 
-        try ShellCommand("git fetch").execute()
-        let count = try ShellCommand("git rev-list --count origin/master..master").execute().chomp()
-        guard count == "0" else {
-            throw self.userError("deploying", because: "you have unpushed commits")
+            try ShellCommand("git fetch").execute()
+            let count = try ShellCommand("git rev-list --count origin/master..master").execute().chomp()
+            guard count == "0" else {
+                throw self.userError("deploying", because: "you have unpushed commits")
+            }
         }
 
         let executable = try self.executable()
 
         let spec = try self.loadSpec(for: .release) // Always build from prod because that is what will be used on the server
 
-        try self.test()
+        if !resume {
+            try self.test()
+        }
 
         "Deploying \(environment.name)...".log()
         "----------------------------------".log()
@@ -63,19 +68,21 @@ private extension PackageService {
         let tempDirectory = "\(environment.remoteTempDirectoryPrefix)\(spec.domain)"
         let finalDirectory = "\(environment.remoteDirectoryPrefix)\(spec.domain)"
 
-        "Cloning latest code...........".log(terminator: "")
-        try service.execute("rm -r \(tempDirectory) || true")
-        try service.execute("ssh-agent bash -c 'ssh-add ~/.ssh/\(spec.domain); git clone \(repository) \(tempDirectory)'")
-        try service.execute("cp \(finalDirectory)/database_password.string \(tempDirectory)/database_password.string")
-        try service.execute("cp \(finalDirectory)/extra_info.json \(tempDirectory)/extra_info.json")
-        try service.execute("cp \(finalDirectory)/dev_extra_info.json \(tempDirectory)/dev_extra_info.json")
-        "done".log(as: .good)
+        if !resume {
+            "Cloning latest code...........".log(terminator: "")
+            try service.execute("rm -r \(tempDirectory) || true")
+            try service.execute("ssh-agent bash -c 'ssh-add ~/.ssh/\(spec.domain); git clone \(repository) \(tempDirectory)'")
+            try service.execute("cp -p \(finalDirectory)/database_password.string \(tempDirectory)/database_password.string")
+            try service.execute("cp -p \(finalDirectory)/extra_info.json \(tempDirectory)/extra_info.json")
+            try service.execute("cp -p \(finalDirectory)/dev_extra_info.json \(tempDirectory)/dev_extra_info.json")
+            "done".log(as: .good)
 
-        "Copying data directories......".log(terminator: "")
-        for directory in spec.dataDirectories {
-            try service.execute("ln -s \(finalDirectory)/\(directory) \(tempDirectory)/\(directory)")
+            "Copying data directories......".log(terminator: "")
+            for directory in spec.dataDirectories {
+                try service.execute("ln -s \(finalDirectory)/\(directory) \(tempDirectory)/\(directory)")
+            }
+            "done".log(as: .good)
         }
-        "done".log(as: .good)
 
         try service.change(to: tempDirectory)
 
@@ -110,10 +117,10 @@ private extension PackageService {
 
         "Installing....................".log(terminator: "")
         try service.execute("rm -rf \(finalDirectory)/Generated")
-        try service.execute("cp -r \(tempDirectory)/Generated \(finalDirectory)")
+        try service.execute("cp -rp \(tempDirectory)/Generated \(finalDirectory)")
         try service.execute("rm -rf \(finalDirectory)/.build")
         try service.execute("mkdir -p \(finalDirectory)/.build/release/")
-        try service.execute("cp -r \(tempDirectory)/.build/release/\(executable.name) \(finalDirectory)/.build/release/")
+        try service.execute("cp -rp \(tempDirectory)/.build/release/\(executable.name) \(finalDirectory)/.build/release/")
         try service.change(to: finalDirectory)
         try service.execute("ssh-agent bash -c 'ssh-add ~/.ssh/\(spec.domain); git pull'")
         "done".log(as: .good)
