@@ -18,10 +18,11 @@ struct RunCommand: CommandHandler {
     static func handler(parser: Parser) throws {
         let port = parser.optionalInt(named: "port")
         let environment = parser.optionalString(named: "configuration")
+        let executable = parser.optionalString(named: "executable")
 
         try parser.parse()
 
-        var service = try PackageService()
+        var service = PackageService(executableName: executable.parsedValue)
         try service.run(onPort: port.parsedValue, for: environment.parsedValue == "prod" ? .release : .debug)
     }
 }

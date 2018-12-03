@@ -18,7 +18,7 @@ struct BuildCommand: CommandHandler {
         let environment = parser.optionalString(named: "configuration")
         try parser.parse()
 
-        let service = try PackageService()
+        let service = PackageService(executableName: nil)
         try service.build(for: environment.parsedValue == "prod" ? .release : .debug)
     }
 }

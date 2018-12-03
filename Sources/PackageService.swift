@@ -11,17 +11,36 @@ import Swiftlier
 import Foundation
 
 struct PackageService: ErrorGenerating {
-    let name: String
     private var builtEnvironments = [Environment:Void]()
     fileprivate var spec: SwiftServeInstanceSpec? = nil
     fileprivate var desc: PackageDescription? = nil
 
-    var databaseName: String {
-        return self.name.replacingOccurrences(of: ".", with: "_")
+    let executableName: String?
+    init(executableName: String?) {
+        self.executableName = executableName
     }
 
-    init() throws {
-        self.name = try type(of: self).getPackageName()
+    mutating func name() throws -> String {
+        return try self.loadDescription().name
+    }
+
+    mutating func executable() throws -> PackageTarget {
+        let description = try self.loadDescription()
+        if let name = self.executableName {
+            guard let executable = description.executables.first(where: {$0.name == name}) else {
+                throw self.userError("executing", because: "an executable named '\(name)' could not be found")
+            }
+            return executable
+        }
+        else {
+            guard description.executables.count <= 1 else {
+                throw self.userError("executing", because: "multiple executables were found, you must specify which one should be used")
+            }
+            guard let executable = description.executables.first else {
+                throw self.userError("executing", because: "no executable found")
+            }
+            return executable
+        }
     }
 
     var buildFlags: String {    
@@ -74,12 +93,7 @@ struct PackageService: ErrorGenerating {
         let _ = try self.loadSpec(for: environment)
 
         named?.log(as: .neutral)
-        print(".build/\(environment.rawValue)/\(self.name) \(environment.configuration) \(subCommand)")
-        return ShellCommand(".build/\(environment.rawValue)/\(self.name) \(environment.configuration) \(subCommand)", captureOutput: captureOutput)
-    }
-
-    mutating func queryDatabaseCommand(with query: String) -> ShellCommand {
-        return ShellCommand("echo \(query)").pipe(to: "/usr/local/bin/psql -d \(self.databaseName)", captureOutput: false)
+        return ShellCommand(".build/\(environment.rawValue)/\(try self.executable().name) \(environment.configuration) \(subCommand)", captureOutput: captureOutput)
     }
 
     @discardableResult
@@ -89,19 +103,8 @@ struct PackageService: ErrorGenerating {
 }
 
 private extension PackageService {
-    static func getPackageName() throws -> String {
-        let packageJson = try ShellCommand("swift package dump-package").execute()
-        guard let jsonData = packageJson.data(using: .utf8)
-            , let name = (try JSON(data: jsonData))["name"]?.string
-            else
-        {
-                throw self.error("getting package name", because: "Could not parse package dump")
-        }
-        return name
-    }
-
     mutating func validateSpec(for environment: Environment) throws -> SwiftServeInstanceSpec {
-        let jsonString = try ShellCommand(".build/\(environment.rawValue)/\(self.name) info").execute()
+        let jsonString = try ShellCommand(".build/\(environment.rawValue)/\(try self.executable().name) info").execute()
         let data = jsonString.data(using: .utf8)!
         let spec = try JSONDecoder().decode(SwiftServeInstanceSpec.self, from: data)
 

@@ -18,38 +18,32 @@ struct DatabaseCommand: CommandHandler {
     static func handler(parser: Parser) throws {
         parser.command(named: "reset", shortDescription: "Delete the database (if it exists) and recreate it") { parser in
             let environment = parser.string(named: "configuration")
+            let executable = parser.optionalString(named: "executable")
 
             try parser.parse()
 
-            var service = try PackageService()
-            try service.resetDatabase(for: environment.parsedValue == "prod" ? .release : .debug, includingRole: false, includingMigration: true)
+            var service = PackageService(executableName: executable.parsedValue)
+            try service.resetDatabase(for: environment.parsedValue == "prod" ? .release : .debug, includingRole: true, includingMigration: true)
         }
 
         parser.command(named: "migrate", shortDescription: "Migrate to the latest version of the database spec") { parser in
             let environment = parser.string(named: "configuration")
+            let executable = parser.optionalString(named: "executable")
 
             try parser.parse()
 
-            var service = try PackageService()
+            var service = PackageService(executableName: executable.parsedValue)
             try service.migrateDatabase(for: environment.parsedValue == "prod" ? .release : .debug)
-        }
-
-        parser.command(named: "sql", shortDescription: "Execute an arbitrary sql command inside the database") { parser in
-            let query = parser.string(named: "query")
-
-            try parser.parse()
-
-            var service = try PackageService()
-            try service.queryDatabaseCommand(with: query.parsedValue).execute()
         }
 
         parser.command(named: "pull", shortDescription: "Pull the database from the deploy server") { parser in
             let from = parser.string(named: "from_configuration")
             let to = parser.optionalString(named: "to_configuration")
+            let executable = parser.optionalString(named: "executable")
 
             try parser.parse()
 
-            var packageService = try PackageService()
+            var packageService = PackageService(executableName: executable.parsedValue)
             try packageService.pullDatabase(
                 for: from.parsedValue == "prod" ? .release : .debug,
                 into: to.parsedValue == "prod" ? .release : .debug

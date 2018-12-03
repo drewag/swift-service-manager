@@ -31,7 +31,7 @@ struct EditCommand: CommandHandler, ErrorGenerating {
                 throw self.userError("editing repository", because: "Couldn't change directory into repository")
             }
 
-            var service = try PackageService()
+            var service = PackageService(executableName: nil)
             try service.resetDatabase(for: .debug, includingRole: true, includingMigration: true)
             try service.generateProject(noBuild: false)
             try service.openProject()

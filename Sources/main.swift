@@ -7,7 +7,7 @@ guard validateDependencies() else {
 
 let parser = Parser(arguments: CommandLine.arguments)
 
-parser.command(InitCommand.self)
+//parser.command(InitCommand.self)
 parser.command(BuildCommand.self)
 parser.command(Testcommand.self)
 parser.command(ProjectCommand.self)

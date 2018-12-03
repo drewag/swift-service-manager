@@ -20,7 +20,7 @@ struct UpdateCommand: CommandHandler {
 
         try parser.parse()
 
-        var service = try PackageService()
+        var service = PackageService(executableName: nil)
         try service.update(for: environment.parsedValue == "prod" ? .release : .debug)
     }
 }

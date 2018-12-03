@@ -20,9 +20,7 @@ struct ProjectCommand: CommandHandler {
 
         try parser.parse()
 
-
-
-        var service = try PackageService()
+        var service = PackageService(executableName: nil)
         try service.generateProject(noBuild: noBuild.wasPresent)
     }
 }
@@ -34,9 +32,9 @@ extension PackageService {
         try self.generateSchemes(noBuild: noBuild)
     }
 
-    func openProject() throws {
+    mutating func openProject() throws {
         "Openning project...".log()
-        let _ = try ShellCommand("open \(self.name).xcodeproj").execute()
+        let _ = try ShellCommand("open \(try self.name()).xcodeproj").execute()
     }
 }
 
@@ -46,18 +44,19 @@ private extension PackageService {
         let _ = try ShellCommand("swift package \(flags) generate-xcodeproj").execute()
     }
     mutating func generateSchemes(noBuild: Bool) throws {
-        try self.schemeXML(arguments: ["server", "8080"])
+        let name = try self.name()
+        try self.schemeXML(arguments: ["server", "8080"], withName: name)
             .write(toFile: "\(name).xcodeproj/xcshareddata/xcschemes/server.xcscheme", atomically: true, encoding: .utf8)
-        try self.schemeXML(arguments: ["info"])
+        try self.schemeXML(arguments: ["info"], withName: name)
             .write(toFile: "\(name).xcodeproj/xcshareddata/xcschemes/info.xcscheme", atomically: true, encoding: .utf8)
-        try self.schemeXML(arguments: ["db", "migrate"])
+        try self.schemeXML(arguments: ["db", "migrate"], withName: name)
             .write(toFile: "\(name).xcodeproj/xcshareddata/xcschemes/migrate-database.xcscheme", atomically: true, encoding: .utf8)
         if !noBuild {
             do {
                 for scheme in try self.loadSpec(for: .debug).extraSchemes {
                     let name = scheme.name.lowercased().replacingOccurrences(of: " ", with: "-")
-                    try self.schemeXML(arguments: scheme.arguments)
-                        .write(toFile: "\(self.name).xcodeproj/xcshareddata/xcschemes/\(name).xcscheme", atomically: true, encoding: .utf8)
+                    try self.schemeXML(arguments: scheme.arguments, withName: name)
+                        .write(toFile: "\(name).xcodeproj/xcshareddata/xcschemes/\(name).xcscheme", atomically: true, encoding: .utf8)
                 }
             }
             catch {
@@ -69,7 +68,7 @@ private extension PackageService {
         }
     }
 
-    func schemeXML(arguments: [String]) -> String {
+    func schemeXML(arguments: [String], withName name: String) -> String {
         var xml = """
             <?xml version="1.0" encoding="UTF-8"?>
             <Scheme
@@ -87,10 +86,10 @@ private extension PackageService {
                         buildForAnalyzing = "YES">
                         <BuildableReference
                            BuildableIdentifier = "primary"
-                           BlueprintIdentifier = "\(self.name)::\(self.name)"
+                           BlueprintIdentifier = "\(name)::\(name)"
                            BuildableName = "web"
                            BlueprintName = "web"
-                           ReferencedContainer = "container:\(self.name).xcodeproj">
+                           ReferencedContainer = "container:\(name).xcodeproj">
                         </BuildableReference>
                      </BuildActionEntry>
                   </BuildActionEntries>
@@ -106,10 +105,10 @@ private extension PackageService {
                   <MacroExpansion>
                      <BuildableReference
                         BuildableIdentifier = "primary"
-                        BlueprintIdentifier = "\(self.name)::\(self.name)"
-                        BuildableName = "\(self.name)"
-                        BlueprintName = "\(self.name)"
-                        ReferencedContainer = "container:\(self.name).xcodeproj">
+                        BlueprintIdentifier = "\(name)::\(name)"
+                        BuildableName = "\(name)"
+                        BlueprintName = "\(name)"
+                        ReferencedContainer = "container:\(name).xcodeproj">
                      </BuildableReference>
                   </MacroExpansion>
                   <AdditionalOptions>
@@ -131,10 +130,10 @@ private extension PackageService {
                      runnableDebuggingMode = "0">
                      <BuildableReference
                         BuildableIdentifier = "primary"
-                        BlueprintIdentifier = "\(self.name)::\(self.name)"
-                        BuildableName = "\(self.name)"
-                        BlueprintName = "\(self.name)"
-                        ReferencedContainer = "container:\(self.name).xcodeproj">
+                        BlueprintIdentifier = "\(name)::\(name)"
+                        BuildableName = "\(name)"
+                        BlueprintName = "\(name)"
+                        ReferencedContainer = "container:\(name).xcodeproj">
                      </BuildableReference>
                   </BuildableProductRunnable>
                   <CommandLineArguments>

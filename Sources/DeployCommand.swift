@@ -16,10 +16,11 @@ struct DeployCommand: CommandHandler, ErrorGenerating {
 
     static func handler(parser: Parser) throws {
         let environmentPromise = parser.string(named: "configuration")
+        let executable = parser.optionalString(named: "executable")
 
         try parser.parse()
 
-        var packageService = try PackageService()
+        var packageService = PackageService(executableName: executable.parsedValue)
         try packageService.deploy(environmentPromise.parsedValue == "prod" ? .release : .debug)
     }
 }
@@ -47,13 +48,7 @@ private extension PackageService {
             throw self.userError("deploying", because: "you have unpushed commits")
         }
 
-        let description = try self.loadDescription()
-        guard description.executables.count <= 1 else {
-            throw self.userError("deploying", because: "multiple executables were found and that is not supported yet")
-        }
-        guard let executable = description.executables.first else {
-            throw self.userError("deploying", because: "no executable found")
-        }
+        let executable = try self.executable()
 
         let spec = try self.loadSpec(for: .release) // Always build from prod because that is what will be used on the server
 

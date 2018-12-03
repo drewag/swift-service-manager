@@ -18,7 +18,7 @@ struct Testcommand: CommandHandler {
     static func handler(parser: Parser) throws {
         try parser.parse()
 
-        let service = try PackageService()
+        let service = PackageService(executableName: nil)
         try service.test()
     }
 }

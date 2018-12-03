@@ -17,12 +17,12 @@ struct CustomCommand: CommandHandler {
 
     static func handler(parser: Parser) throws {
         do {
-            var service = try PackageService()
+            var service = PackageService(executableName: nil)
             for scheme in try service.loadSpec(for: .debug).extraSchemes {
                 parser.command(named: scheme.name.replacingOccurrences(of: " ", with: "-"), handler: { parser in
                     try parser.parse()
 
-                    var service = try PackageService()
+                    var service = PackageService(executableName: nil)
                     try service.command(
                         named: "Calling command...",
                         captureOutput: false,
