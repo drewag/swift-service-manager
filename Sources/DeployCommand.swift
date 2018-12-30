@@ -54,6 +54,7 @@ private extension PackageService {
         let executable = try self.executable()
 
         let spec = try self.loadSpec(for: .release) // Always build from prod because that is what will be used on the server
+        let description = try self.loadDescription()
 
         if !resume {
             try self.test()
@@ -72,9 +73,8 @@ private extension PackageService {
             "Cloning latest code...........".log(terminator: "")
             try service.execute("rm -r \(tempDirectory) || true")
             try service.execute("ssh-agent bash -c 'ssh-add ~/.ssh/\(spec.domain); git clone \(repository) \(tempDirectory)'")
-            try service.execute("cp -p \(finalDirectory)/database_password.string \(tempDirectory)/database_password.string")
-            try service.execute("cp -p \(finalDirectory)/extra_info.json \(tempDirectory)/extra_info.json")
-            try service.execute("cp -p \(finalDirectory)/dev_extra_info.json \(tempDirectory)/dev_extra_info.json")
+            try service.execute("mkdir -p \(finalDirectory)/Config")
+            try service.execute("cp -R \(finalDirectory)/Config \(tempDirectory)/Config")
             "done".log(as: .good)
 
             "Copying data directories......".log(terminator: "")
@@ -100,7 +100,9 @@ private extension PackageService {
         "done".log(as: .good)
 
         "Migrating the test database...".log(terminator: "")
-        try service.execute(".build/debug/\(executable.name) \(environment.configuration) --test db migrate")
+        for executable in description.executables {
+            try service.execute(".build/debug/\(executable.name) \(environment.configuration) --test db migrate")
+        }
         "done".log(as: .good)
 
         "Testing.......................".log(terminator: "")

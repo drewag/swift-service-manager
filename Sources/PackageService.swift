@@ -112,7 +112,7 @@ private extension PackageService {
             throw self.userError("validating service spec", because: "Incorrect version")
         }
 
-        if !FileManager.default.fileExists(atPath: "extra_info.json") {
+        if !FileManager.default.fileExists(atPath: "extra_info.json") && !FileManager.default.fileExists(atPath: "Config/extra_info.json") {
             guard let extraInfoDict = try JSONSerialization.jsonObject(with: spec.extraInfoSpec.data(using: .utf8)!, options: JSONSerialization.ReadingOptions()) as? [String:String] else {
                 throw self.userError("validating service spec", because: "Unrecognized extra info format")
             }
