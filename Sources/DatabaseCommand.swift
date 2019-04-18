@@ -78,7 +78,7 @@ extension PackageService {
         let remoteDatabaseName = from.serviceEnvironment.databaseName(from: spec)
         let remoteDatabaseUser = from.serviceEnvironment.databaseRole(from: spec)
         let downloadPath = "\(from.remoteTempDirectoryPrefix)\(spec.domain).bk"
-        try service.execute("PGPASSWORD=`cat \(from.remoteDirectoryPrefix)\(spec.domain)/database_password.string` pg_dump -h 127.0.0.1 \(remoteDatabaseName) -U \(remoteDatabaseUser) > \(downloadPath)")
+        try service.execute("PGPASSWORD=`cat \(from.remoteDirectoryPrefix)\(spec.domain)/Config/database_password.string` pg_dump -h 127.0.0.1 \(remoteDatabaseName) -U \(remoteDatabaseUser) > \(downloadPath)")
         try ShellCommand("scp \(spec.domain):\(downloadPath) \(downloadPath)").execute()
         "done".log(as: .good)
 

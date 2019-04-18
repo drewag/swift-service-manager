@@ -74,7 +74,8 @@ private extension PackageService {
             try service.execute("rm -r \(tempDirectory) || true")
             try service.execute("ssh-agent bash -c 'ssh-add ~/.ssh/\(spec.domain); git clone \(repository) \(tempDirectory)'")
             try service.execute("mkdir -p \(finalDirectory)/Config")
-            try service.execute("cp -R \(finalDirectory)/Config \(tempDirectory)/Config")
+            try service.execute("mkdir -p \(tempDirectory)/Config")
+            try service.execute("cp \(finalDirectory)/Config/* \(tempDirectory)/Config")
             "done".log(as: .good)
 
             "Copying data directories......".log(terminator: "")
