@@ -56,6 +56,6 @@ struct RemoteServerService: ErrorGenerating {
     }
 
     @discardableResult func execute(swift: String) throws -> String {
-        return try self.execute("/usr/bin/swiftenv/versions/`if [[ -f .swift-version ]]; then cat .swift-version; else echo 5.0; fi`/usr/bin/swift \(swift)")
+        return try self.execute("/usr/bin/swiftenv/versions/`if [[ -f .swift-version ]]; then cat .swift-version; else echo 5.1.1; fi`/usr/bin/swift \(swift)")
     }
 }
