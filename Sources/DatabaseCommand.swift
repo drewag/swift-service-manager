@@ -58,9 +58,9 @@ extension PackageService {
     mutating func resetDatabase(for environment: Environment, includingRole: Bool, includingMigration: Bool) throws {
         if includingRole {
             try String(randomOfLength: 20).write(toFile: "database_password.string", atomically: true, encoding: .utf8)
-            try self.command(named: "Resetting database...", subCommand: "db recreate-role").pipe(to: "/usr/local/bin/psql -q").execute()
+            try self.command(named: "Resetting database...", subCommand: "db recreate-role").pipe(to: "/usr/bin/env psql -q").execute()
         }
-        try self.command(subCommand: "db recreate").pipe(to: "/usr/local/bin/psql -q").execute()
+        try self.command(subCommand: "db recreate").pipe(to: "/usr/bin/env psql -q").execute()
         if includingMigration {
             try self.migrateDatabase(for: .debug)
         }
@@ -84,9 +84,9 @@ extension PackageService {
 
         let localDatabaseName = to.serviceEnvironment.databaseName(from: spec)
         "Applying to local database........".log()
-        try ShellCommand("/usr/local/bin/psql -c 'DROP DATABASE IF EXISTS \(localDatabaseName)'").execute()
-        try ShellCommand("/usr/local/bin/psql -c 'CREATE DATABASE \(localDatabaseName)'").execute()
-        try ShellCommand("cat '\(downloadPath)'").pipe(to: "/usr/local/bin/psql \(to.serviceEnvironment.databaseName(from: spec)) -q").execute()
+        try ShellCommand("/usr/bin/env psql -c 'DROP DATABASE IF EXISTS \(localDatabaseName)'").execute()
+        try ShellCommand("/usr/bin/env psql -c 'CREATE DATABASE \(localDatabaseName)'").execute()
+        try ShellCommand("cat '\(downloadPath)'").pipe(to: "/usr/bin/env psql \(to.serviceEnvironment.databaseName(from: spec)) -q").execute()
         "done".log(as: .good)
 
         "Syncing data directories...".log()
