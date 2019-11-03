@@ -7,9 +7,10 @@
 
 import Foundation
 import Swiftlier
+import SwiftlierCLI
 import Shout
 
-struct RemoteServerService: ErrorGenerating {
+struct RemoteServerService {
     let ssh: SSH
     var workingDirectory: String?
 
@@ -36,7 +37,7 @@ struct RemoteServerService: ErrorGenerating {
             self.workingDirectory = directory
         }
         catch {
-            throw self.error("changing to directory", because: "'\(directory)' could not be found.")
+            throw GenericSwiftlierError("changing to directory", because: "'\(directory)' could not be found.")
         }
     }
 
@@ -51,7 +52,7 @@ struct RemoteServerService: ErrorGenerating {
         case 0:
             return output
         default:
-            throw self.error("executing '\(command)'", because: "It returned status \(status). It returned '\(output)'")
+            throw GenericSwiftlierError("executing '\(command)'", because: "It returned status \(status). It returned '\(output)'")
         }
     }
 

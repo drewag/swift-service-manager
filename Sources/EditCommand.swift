@@ -9,8 +9,9 @@
 import Foundation
 import CommandLineParser
 import Swiftlier
+import SwiftlierCLI
 
-struct EditCommand: CommandHandler, ErrorGenerating {
+struct EditCommand: CommandHandler {
     static let name: String = "edit"
     static let shortDescription: String? = "Pull down the web service repositry at the given URL to edit it"
     static let longDescription: String? = "Pull down the web service repositry at the given URL, build it, setup the datbabase locally, and open the project in Xcode"
@@ -28,7 +29,7 @@ struct EditCommand: CommandHandler, ErrorGenerating {
             "Cloning repository...".log()
             try ShellCommand("git clone \(repository.parsedValue.absoluteString)").execute()
             guard FileManager.default.changeCurrentDirectoryPath(url.deletingPathExtension().lastPathComponent) else {
-                throw self.userError("editing repository", because: "Couldn't change directory into repository")
+                throw GenericSwiftlierError("editing repository", because: "Couldn't change directory into repository", byUser: true)
             }
 
             var service = PackageService(executableName: nil)
@@ -38,6 +39,6 @@ struct EditCommand: CommandHandler, ErrorGenerating {
 
             return
         }
-        throw self.userError("editing repository", because: "Trying to edit inside an existing repository")
+        throw GenericSwiftlierError("editing repository", because: "Trying to edit inside an existing repository", byUser: true)
     }
 }

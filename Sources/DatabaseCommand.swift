@@ -8,6 +8,7 @@
 
 import CommandLineParser
 import Swiftlier
+import SwiftlierCLI
 import SwiftServe
 
 struct DatabaseCommand: CommandHandler {

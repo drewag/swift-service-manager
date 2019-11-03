@@ -9,6 +9,7 @@
 import Foundation
 import CommandLineParser
 import Swiftlier
+import SwiftlierCLI
 
 struct RunCommand: CommandHandler {
     static let name: String = "run"

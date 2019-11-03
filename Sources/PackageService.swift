@@ -9,8 +9,9 @@
 import SwiftServe
 import Swiftlier
 import Foundation
+import SwiftlierCLI
 
-struct PackageService: ErrorGenerating {
+struct PackageService {
     private var builtEnvironments = [Environment:Void]()
     fileprivate var spec: SwiftServeInstanceSpec? = nil
     fileprivate var desc: PackageDescription? = nil
@@ -28,16 +29,16 @@ struct PackageService: ErrorGenerating {
         let description = try self.loadDescription()
         if let name = self.executableName {
             guard let executable = description.executables.first(where: {$0.name == name}) else {
-                throw self.userError("executing", because: "an executable named '\(name)' could not be found")
+                throw GenericSwiftlierError("executing", because: "an executable named '\(name)' could not be found", byUser: true)
             }
             return executable
         }
         else {
             guard description.executables.count <= 1 else {
-                throw self.userError("executing", because: "multiple executables were found, you must specify which one should be used")
+                throw GenericSwiftlierError("executing", because: "multiple executables were found, you must specify which one should be used", byUser: true)
             }
             guard let executable = description.executables.first else {
-                throw self.userError("executing", because: "no executable found")
+                throw GenericSwiftlierError("executing", because: "no executable found", byUser: true)
             }
             return executable
         }
@@ -109,12 +110,12 @@ private extension PackageService {
         let spec = try JSONDecoder().decode(SwiftServeInstanceSpec.self, from: data)
 
         guard spec.version.major == 5 else {
-            throw self.userError("validating service spec", because: "Incorrect version")
+            throw GenericSwiftlierError("validating service spec", because: "Incorrect version", byUser: true)
         }
 
         if !FileManager.default.fileExists(atPath: "extra_info.json") && !FileManager.default.fileExists(atPath: "Config/extra_info.json") {
             guard let extraInfoDict = try JSONSerialization.jsonObject(with: spec.extraInfoSpec.data(using: .utf8)!, options: JSONSerialization.ReadingOptions()) as? [String:String] else {
-                throw self.userError("validating service spec", because: "Unrecognized extra info format")
+                throw GenericSwiftlierError("validating service spec", because: "Unrecognized extra info format", byUser: true)
             }
 
             if extraInfoDict.count > 0 {
@@ -186,7 +187,7 @@ private extension PackageService {
                 }
                 return value
             default:
-                throw self.userError("validating service spec", because: "Unreconized type: \(type)")
+                throw GenericSwiftlierError("validating service spec", because: "Unreconized type: \(type)", byUser: true)
             }
         } while input.isEmpty
 

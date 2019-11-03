@@ -9,6 +9,7 @@
 import Foundation
 import CommandLineParser
 import Swiftlier
+import SwiftlierCLI
 
 struct ProjectCommand: CommandHandler {
     static let name: String = "project"
@@ -60,7 +61,7 @@ private extension PackageService {
                 }
             }
             catch {
-                throw self.error("generating extra schemes", from: error)
+                throw error.swiftlierError(while: "generating extra schemes")
             }
         }
         else {

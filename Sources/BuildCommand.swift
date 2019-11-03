@@ -8,6 +8,7 @@
 
 import CommandLineParser
 import Swiftlier
+import SwiftlierCLI
 
 struct BuildCommand: CommandHandler {
     static let name: String = "build"

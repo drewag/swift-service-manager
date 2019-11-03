@@ -8,8 +8,9 @@
 import Foundation
 import CommandLineParser
 import Swiftlier
+import SwiftlierCLI
 
-struct DeployCommand: CommandHandler, ErrorGenerating {
+struct DeployCommand: CommandHandler {
     static let name: String = "deploy"
     static let shortDescription: String? = "Deploy to a server"
     static let longDescription: String? = nil
@@ -41,13 +42,13 @@ private extension PackageService {
                 try ShellCommand("git diff-index --quiet HEAD --").execute()
             }
             catch {
-                throw self.userError("deploying", because: "you have uncommited changes")
+                throw GenericSwiftlierError("deploying", because: "you have uncommited changes", byUser: true)
             }
 
             try ShellCommand("git fetch").execute()
             let count = try ShellCommand("git rev-list --count origin/master..master").execute().chomp()
             guard count == "0" else {
-                throw self.userError("deploying", because: "you have unpushed commits")
+                throw GenericSwiftlierError("deploying", because: "you have unpushed commits", byUser: true)
             }
         }
 
@@ -65,7 +66,7 @@ private extension PackageService {
 
         let repository = try ShellCommand("git config --get remote.origin.url").execute().chomp()
 
-        var service = try RemoteServerService(host: spec.domain)
+        var service = try RemoteServerService(host: spec.deployDomain)
         let tempDirectory = "\(environment.remoteTempDirectoryPrefix)\(spec.domain)"
         let finalDirectory = "\(environment.remoteDirectoryPrefix)\(spec.domain)"
 
@@ -132,6 +133,26 @@ private extension PackageService {
         try service.execute("sudo service \(environment.remoteServicePrefix)\(spec.domain) restart")
         try service.execute("rm -rf \(tempDirectory)")
         "done".log(as: .good)
+
+        if !spec.extraDeployDomains.isEmpty {
+            "Deploying to extra deploy domains".log()
+
+            let binaryPath = "/tmp/\(spec.domain).binary"
+            try ShellCommand("scp \(spec.deployDomain):\(finalDirectory)/.build/release/\(executable.name) \(binaryPath)").execute()
+
+            for domain in spec.extraDeployDomains {
+                "\(domain)...".log(terminator: "")
+
+                let domainService = try RemoteServerService(host: domain)
+
+                try ShellCommand("scp \(binaryPath) \(domain):\(binaryPath)").execute()
+                try domainService.execute("sudo service \(environment.remoteServicePrefix)\(spec.domain) stop")
+                try domainService.execute("cp -rp \(binaryPath) \(finalDirectory)/.build/release/\(executable.name)")
+                try domainService.execute("sudo service \(environment.remoteServicePrefix)\(spec.domain) start")
+
+                "done".log(as: .good)
+            }
+        }
 
         "----------------------------------".log()
         "Deployed Successfully".log(as: .good)
